@@ -5,6 +5,9 @@ import Navbar from "@/components/Navbar";
 import { Providers } from "@/components/providers/providers";
 import "./globals.css";
 
+// Clerk Provider 사용으로 인한 동적 렌더링 강제
+export const dynamic = "force-dynamic";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],

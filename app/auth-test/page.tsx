@@ -4,6 +4,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useClerkSupabaseClient } from "@/lib/supabase/clerk-client";
 import { Button } from "@/components/ui/button";
+
+// 빌드 시 사전 렌더링 건너뛰기 (Clerk Context 필요)
+export const dynamic = "force-dynamic";
 import { LuShield, LuCheck, LuX, LuTriangleAlert } from "react-icons/lu";
 import Link from "next/link";
 

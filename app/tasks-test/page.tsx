@@ -32,6 +32,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Plus, CheckCircle2, AlertCircle } from "lucide-react";
 
+// 빌드 시 사전 렌더링 건너뛰기 (Clerk Context 필요)
+export const dynamic = "force-dynamic";
+
 interface Task {
   id: number;
   name: string;
