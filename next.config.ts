@@ -4,10 +4,8 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [{ hostname: "img.clerk.com" }],
   },
-  // Vercel Edge Runtime 호환성을 위한 설정
-  experimental: {
-    serverComponentsExternalPackages: ["@clerk/nextjs"],
-  },
+  // Next.js 15.5+ 업데이트된 설정
+  serverExternalPackages: ["@clerk/nextjs", "@clerk/backend"],
 };
 
 export default nextConfig;
