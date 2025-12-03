@@ -92,7 +92,7 @@ export default function TasksTestPage() {
     }
 
     loadTasks();
-  }, [user, userLoaded, sessionLoaded, supabase]);
+  }, [user, userLoaded, sessionLoaded, supabase, session]);
 
   // 새 Task 생성
   async function createTask(e: React.FormEvent<HTMLFormElement>) {

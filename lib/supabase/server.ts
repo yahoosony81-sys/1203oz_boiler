@@ -43,7 +43,7 @@ export async function createClerkSupabaseClient() {
             cookiesToSet.forEach(({ name, value, options }) => {
               cookieStore.set(name, value, options);
             });
-          } catch (error) {
+          } catch {
             // Server Component에서는 쿠키 설정이 제한될 수 있음
             // 이는 정상적인 동작이며, middleware에서 처리해야 함
           }
@@ -89,7 +89,7 @@ export async function createSupabaseClient() {
             cookiesToSet.forEach(({ name, value, options }) => {
               cookieStore.set(name, value, options);
             });
-          } catch (error) {
+          } catch {
             // Server Component에서는 쿠키 설정이 제한될 수 있음
           }
         },
