@@ -43,14 +43,13 @@ export default function MyVehiclesPage() {
   console.log('Vehicles count:', vehicles.length);
   console.groupEnd();
 
-  // 로그인 체크
-  if (isLoaded && !user) {
-    router.push('/sign-in');
-    return null;
-  }
-
   // 차량 목록 불러오기
   useEffect(() => {
+    // 로그인 체크
+    if (isLoaded && !user) {
+      router.push('/sign-in');
+      return;
+    }
     const fetchVehicles = async () => {
       console.group('🔄 Fetching vehicles...');
       setIsLoading(true);

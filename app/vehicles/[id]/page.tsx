@@ -26,13 +26,9 @@ import { createBooking } from '@/actions/bookings';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { 
   ArrowLeft, 
   Car, 
-  Calendar, 
-  MapPin, 
-  DollarSign, 
   User, 
   Loader2,
   ChevronLeft,
@@ -47,7 +43,7 @@ export const dynamic = 'force-dynamic';
 
 export default function VehicleDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
-  const { user, isLoaded } = useUser();
+  const { user } = useUser();
   const [vehicleId, setVehicleId] = useState<string>('');
   const [vehicle, setVehicle] = useState<VehicleWithOwner | null>(null);
   const [isLoading, setIsLoading] = useState(true);

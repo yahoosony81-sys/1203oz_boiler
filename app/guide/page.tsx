@@ -5,7 +5,7 @@
  * 차주와 이용자를 위한 서비스 이용 가이드를 제공합니다.
  */
 
-import { Car, Search, Calendar, Key, MapPin, CheckCircle } from 'lucide-react';
+import { Car, Search, CheckCircle } from 'lucide-react';
 
 export default function GuidePage() {
   return (

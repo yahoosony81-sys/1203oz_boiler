@@ -64,14 +64,13 @@ export default function MyBookingsPage() {
   console.log('Bookings count:', bookings.length);
   console.groupEnd();
 
-  // 로그인 체크
-  if (isLoaded && !user) {
-    router.push('/sign-in');
-    return null;
-  }
-
   // 예약 목록 불러오기
   useEffect(() => {
+    // 로그인 체크
+    if (isLoaded && !user) {
+      router.push('/sign-in');
+      return;
+    }
     const fetchBookings = async () => {
       console.group('🔄 Fetching bookings...');
       setIsLoading(true);
