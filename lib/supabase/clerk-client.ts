@@ -42,7 +42,7 @@ import { useMemo } from "react";
  * ```
  */
 export function useClerkSupabaseClient() {
-  const { session } = useSession();
+  const { session, isLoaded } = useSession();
 
   const supabase = useMemo(() => {
     return createBrowserClient(
@@ -51,11 +51,20 @@ export function useClerkSupabaseClient() {
       {
         // Clerk 토큰을 accessToken으로 전달하여 RLS 정책에서 사용
         async accessToken() {
-          return (await session?.getToken()) ?? null;
+          // 세션이 로드되지 않았거나 없으면 null 반환
+          if (!isLoaded || !session) {
+            return null;
+          }
+          try {
+            return (await session.getToken()) ?? null;
+          } catch (error) {
+            console.error("Error getting Clerk token:", error);
+            return null;
+          }
         },
       }
     );
-  }, [session]);
+  }, [session, isLoaded]);
 
   return supabase;
 }

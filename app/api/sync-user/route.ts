@@ -2,6 +2,9 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import { getServiceRoleClient } from "@/lib/supabase/service-role";
 
+// 동적 렌더링 강제 (Clerk auth 필요)
+export const dynamic = "force-dynamic";
+
 /**
  * Clerk 사용자를 Supabase users 테이블에 동기화하는 API
  *
@@ -11,9 +14,11 @@ import { getServiceRoleClient } from "@/lib/supabase/service-role";
 export async function POST() {
   try {
     // Clerk 인증 확인
-    const { userId } = await auth();
+    const authResult = await auth();
+    const userId = authResult?.userId;
 
     if (!userId) {
+      console.error("Sync user: No userId found in auth result");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -60,8 +65,20 @@ export async function POST() {
     });
   } catch (error) {
     console.error("Sync user error:", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
+    console.error("Error details:", {
+      message: errorMessage,
+      stack: errorStack,
+      type: error instanceof Error ? error.constructor.name : typeof error,
+    });
+    
     return NextResponse.json(
-      { error: "Internal server error" },
+      { 
+        error: "Internal server error",
+        details: process.env.NODE_ENV === "development" ? errorMessage : undefined,
+      },
       { status: 500 }
     );
   }
