@@ -21,7 +21,7 @@
 
 import { auth } from '@clerk/nextjs/server';
 import { createClerkSupabaseClient } from '@/lib/supabase/server';
-import { createClient as createServiceClient } from '@/lib/supabase/service-role';
+import { getServiceRoleClient } from '@/lib/supabase/service-role';
 import type { 
   Vehicle, 
   VehicleFormData, 
@@ -46,7 +46,6 @@ async function uploadVehicleImages(
   console.group('🖼️ uploadVehicleImages');
   console.log('Uploading images:', { count: images.length, vehicleId, clerkUserId });
 
-  const supabase = createServiceClient();
   const uploadedUrls: string[] = [];
 
   try {
@@ -63,7 +62,8 @@ async function uploadVehicleImages(
       const buffer = Buffer.from(arrayBuffer);
 
       // Storage에 업로드
-      const { data, error } = await supabase.storage
+      const serviceSupabase = getServiceRoleClient();
+      const { data, error } = await serviceSupabase.storage
         .from('vehicle-images')
         .upload(filePath, buffer, {
           contentType: file.type,
@@ -76,7 +76,7 @@ async function uploadVehicleImages(
       }
 
       // 공개 URL 생성
-      const { data: { publicUrl } } = supabase.storage
+      const { data: { publicUrl } } = serviceSupabase.storage
         .from('vehicle-images')
         .getPublicUrl(data.path);
 
@@ -401,7 +401,7 @@ export async function deleteVehicle(vehicleId: string): Promise<ApiResponse> {
     // 이미지 삭제 (Storage)
     if (vehicle.images && vehicle.images.length > 0) {
       console.log('🗑️ Deleting images from storage...');
-      const serviceSupabase = createServiceClient();
+      const serviceSupabase = getServiceRoleClient();
       
       for (const imageUrl of vehicle.images) {
         try {

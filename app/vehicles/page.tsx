@@ -17,7 +17,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { createClerkSupabaseClient } from '@/lib/supabase/clerk-client';
+import { useSupabaseClient } from '@/lib/supabase/clerk-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,6 +28,7 @@ import type { Vehicle } from '@/types/database';
 
 export default function VehiclesPage() {
   const searchParams = useSearchParams();
+  const supabase = useSupabaseClient();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -58,8 +59,6 @@ export default function VehiclesPage() {
       setError(null);
 
       try {
-        const supabase = createClerkSupabaseClient();
-
         // 기본 쿼리
         let query = supabase
           .from('vehicles')
@@ -109,7 +108,7 @@ export default function VehiclesPage() {
     };
 
     fetchVehicles();
-  }, [filters]);
+  }, [filters, supabase]);
 
   // 검색 폼 제출
   const handleSearch = (e: React.FormEvent) => {
