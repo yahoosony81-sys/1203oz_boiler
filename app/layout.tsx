@@ -27,16 +27,8 @@ export const metadata: Metadata = {
   openGraph: {
     title: "TripCarShare - 제주 공항 차량 공유",
     description: "제주 공항에서 시작하는 스마트한 P2P 차량 공유 서비스. 현지 차주와 직접 연결되는 편리하고 합리적인 차량 공유 플랫폼",
-    url: "https://nextjs-supabase-boilerplate-main-1300cdfrz.vercel.app",
+    url: "https://nextjs-supabase-boilerplate-main-446nwq528.vercel.app",
     siteName: "TripCarShare",
-    images: [
-      {
-        url: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
-        width: 1200,
-        height: 630,
-        alt: "TripCarShare - 제주 여행을 위한 차량 공유",
-      },
-    ],
     locale: "ko_KR",
     type: "website",
   },
@@ -44,7 +36,6 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "TripCarShare - 제주 공항 차량 공유",
     description: "제주 공항에서 시작하는 스마트한 P2P 차량 공유 서비스",
-    images: ["https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80"],
   },
   robots: {
     index: true,
