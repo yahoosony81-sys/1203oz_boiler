@@ -2,291 +2,196 @@
  * @file app/vehicles/my/page.tsx
  * @description 내 차량 관리 페이지
  * 
- * 차주가 등록한 차량 목록을 보고 관리하는 페이지입니다.
+ * 차주가 자신이 등록한 차량을 관리할 수 있는 페이지입니다.
  * 
  * 주요 기능:
- * 1. 내가 등록한 차량 목록 조회
- * 2. 차량 상태 토글 (활성화/비활성화)
- * 3. 차량 삭제
- * 4. 새 차량 등록 버튼
- * 
- * @dependencies
- * - @clerk/nextjs: 사용자 인증
- * - actions/vehicles: Server Actions
+ * 1. 내 차량 목록 표시
+ * 2. 차량 수정/삭제
+ * 3. 차량 활성/비활성 토글
  */
 
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
-import { getMyVehicles, deleteVehicle, updateVehicleStatus } from '@/actions/vehicles';
-import { Button } from '@/components/ui/button';
-import { Plus, Car, Loader2, Calendar, DollarSign, MapPin, Trash2 } from 'lucide-react';
-import Link from 'next/link';
-import Image from 'next/image';
-import type { Vehicle } from '@/types/database';
+import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
+import { Plus, Car, RefreshCw } from "lucide-react";
+import Link from "next/link";
 
-// Clerk Provider 사용으로 인한 동적 렌더링 강제
-export const dynamic = 'force-dynamic';
+import { Button } from "@/components/ui/button";
+import { VehicleCard } from "@/components/vehicle-card";
+import { getMyVehicles, deleteVehicle, toggleVehicleStatus } from "@/actions/vehicle-actions";
+import type { Vehicle } from "@/types/vehicle";
+
+export const dynamic = "force-dynamic";
 
 export default function MyVehiclesPage() {
   const router = useRouter();
-  const { user, isLoaded } = useUser();
+  const { isLoaded, isSignedIn } = useUser();
+  
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  console.group('🚗 MyVehiclesPage Render');
-  console.log('User loaded:', isLoaded);
-  console.log('User ID:', user?.id);
-  console.log('Vehicles count:', vehicles.length);
-  console.groupEnd();
-
-  // 차량 목록 불러오기
-  useEffect(() => {
-    // 로그인 체크
-    if (isLoaded && !user) {
-      router.push('/sign-in');
-      return;
-    }
-    const fetchVehicles = async () => {
-      console.group('🔄 Fetching vehicles...');
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const result = await getMyVehicles();
-
-        if (result.success && result.data) {
-          console.log('✅ Vehicles fetched:', result.data.length);
-          setVehicles(result.data);
-        } else {
-          console.error('❌ Failed to fetch vehicles:', result.error);
-          setError(result.error || '차량을 불러오는데 실패했습니다.');
-        }
-      } catch (err) {
-        console.error('❌ Error fetching vehicles:', err);
-        setError('차량을 불러오는 중 오류가 발생했습니다.');
-      } finally {
-        setIsLoading(false);
-        console.groupEnd();
+  // 차량 목록 조회
+  const fetchVehicles = useCallback(async () => {
+    console.group("[MyVehiclesPage] 차량 목록 조회");
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const result = await getMyVehicles();
+      
+      if (result.success && result.data) {
+        console.log("조회 성공:", result.data.length, "건");
+        setVehicles(result.data);
+      } else {
+        console.error("조회 실패:", result.error);
+        setError(result.error || "차량 목록을 불러오는데 실패했습니다.");
       }
-    };
+    } catch (err) {
+      console.error("예외 발생:", err);
+      setError("오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
+      console.groupEnd();
+    }
+  }, []);
 
-    if (user) {
+  // 페이지 로드 시 조회
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
       fetchVehicles();
     }
-  }, [user]);
+  }, [isLoaded, isSignedIn, fetchVehicles]);
 
-  // 차량 삭제 핸들러
-  const handleDelete = async (vehicleId: string, model: string) => {
-    if (!confirm(`"${model}" 차량을 정말 삭제하시겠습니까?`)) {
-      return;
-    }
-
-    console.group(`🗑️ Deleting vehicle: ${vehicleId}`);
-
-    try {
-      const result = await deleteVehicle(vehicleId);
-
-      if (result.success) {
-        console.log('✅ Vehicle deleted');
-        alert(result.message || '차량이 삭제되었습니다.');
-        // 목록에서 제거
-        setVehicles((prev) => prev.filter((v) => v.id !== vehicleId));
-      } else {
-        console.error('❌ Delete failed:', result.error);
-        alert(result.error || '차량 삭제에 실패했습니다.');
-      }
-    } catch (err) {
-      console.error('❌ Error deleting vehicle:', err);
-      alert('차량 삭제 중 오류가 발생했습니다.');
-    } finally {
-      console.groupEnd();
-    }
+  // 차량 수정
+  const handleEdit = (vehicleId: string) => {
+    router.push(`/vehicles/${vehicleId}/edit`);
   };
 
-  // 차량 상태 토글 핸들러
-  const handleToggleStatus = async (vehicleId: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'active' ? 'unavailable' : 'active';
+  // 차량 삭제
+  const handleDelete = async (vehicleId: string) => {
+    if (!confirm("정말 이 차량을 삭제하시겠습니까?")) return;
     
-    console.group(`🔄 Toggling vehicle status: ${vehicleId}`);
-    console.log('Current status:', currentStatus, '→ New status:', newStatus);
-
-    try {
-      const result = await updateVehicleStatus(vehicleId, newStatus);
-
-      if (result.success) {
-        console.log('✅ Status updated');
-        // 목록 업데이트
-        setVehicles((prev) =>
-          prev.map((v) => (v.id === vehicleId ? { ...v, status: newStatus } : v))
-        );
-      } else {
-        console.error('❌ Status update failed:', result.error);
-        alert(result.error || '상태 변경에 실패했습니다.');
-      }
-    } catch (err) {
-      console.error('❌ Error updating status:', err);
-      alert('상태 변경 중 오류가 발생했습니다.');
-    } finally {
-      console.groupEnd();
+    console.log("[MyVehiclesPage] 차량 삭제:", vehicleId);
+    
+    const result = await deleteVehicle(vehicleId);
+    
+    if (result.success) {
+      setVehicles((prev) => prev.filter((v) => v.id !== vehicleId));
+    } else {
+      alert(result.error || "삭제에 실패했습니다.");
     }
   };
 
-  // 날짜 포맷팅
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
+  // 차량 상태 토글
+  const handleToggleStatus = async (vehicleId: string, status: "active" | "unavailable") => {
+    console.log("[MyVehiclesPage] 상태 변경:", vehicleId, "->", status);
+    
+    const result = await toggleVehicleStatus(vehicleId, status);
+    
+    if (result.success && result.data) {
+      setVehicles((prev) =>
+        prev.map((v) => (v.id === vehicleId ? result.data! : v))
+      );
+    } else {
+      alert(result.error || "상태 변경에 실패했습니다.");
+    }
   };
 
-  if (!isLoaded || !user) {
+  // 로그인 체크
+  if (!isLoaded) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin" />
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!isSignedIn) {
+    return (
+      <div className="max-w-2xl mx-auto p-6 text-center">
+        <h1 className="text-2xl font-bold mb-4">로그인이 필요합니다</h1>
+        <p className="text-gray-600 mb-4">내 차량을 관리하려면 먼저 로그인해주세요.</p>
+        <Button onClick={() => router.push("/sign-in")}>로그인</Button>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="max-w-7xl mx-auto p-6">
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold">내 차량 관리</h1>
-          <p className="text-gray-600 mt-2">
-            등록한 차량을 관리하고 예약 현황을 확인하세요.
+          <h1 className="text-3xl font-bold text-gray-900">내 차량 관리</h1>
+          <p className="text-gray-600 mt-1">
+            등록한 차량을 관리하고 새 차량을 추가하세요.
           </p>
         </div>
-        <Link href="/vehicles/new">
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            차량 등록
+        
+        <div className="flex gap-3">
+          <Button variant="outline" onClick={fetchVehicles} disabled={isLoading}>
+            <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
+            새로고침
           </Button>
-        </Link>
+          <Button asChild>
+            <Link href="/vehicles/new">
+              <Plus className="w-4 h-4 mr-2" />
+              차량 등록
+            </Link>
+          </Button>
+        </div>
       </div>
 
-      {/* 에러 메시지 */}
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-800">{error}</p>
+      {/* 로딩 상태 */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         </div>
       )}
 
-      {/* 로딩 상태 */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin" />
+      {/* 에러 상태 */}
+      {error && !isLoading && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          {error}
         </div>
-      ) : vehicles.length === 0 ? (
-        /* 차량 없음 */
-        <div className="text-center py-12">
-          <Car className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-xl font-semibold mb-2">등록된 차량이 없습니다</h3>
-          <p className="text-gray-600 mb-6">
-            첫 번째 차량을 등록하고 수익을 창출해보세요!
+      )}
+
+      {/* 빈 상태 */}
+      {!isLoading && !error && vehicles.length === 0 && (
+        <div className="text-center py-20">
+          <Car className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">
+            등록된 차량이 없습니다
+          </h2>
+          <p className="text-gray-500 mb-6">
+            첫 번째 차량을 등록하고 공유를 시작하세요!
           </p>
-          <Link href="/vehicles/new">
-            <Button>
+          <Button asChild>
+            <Link href="/vehicles/new">
               <Plus className="w-4 h-4 mr-2" />
               차량 등록하기
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
-      ) : (
-        /* 차량 목록 */
+      )}
+
+      {/* 차량 목록 */}
+      {!isLoading && !error && vehicles.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {vehicles.map((vehicle) => (
-            <div
+            <VehicleCard
               key={vehicle.id}
-              className="bg-white rounded-lg border overflow-hidden hover:shadow-lg transition-shadow"
-            >
-              {/* 차량 이미지 */}
-              <div className="relative h-48 bg-gray-200">
-                {vehicle.images && vehicle.images.length > 0 ? (
-                  <Image
-                    src={vehicle.images[0]}
-                    alt={vehicle.model}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-full">
-                    <Car className="w-16 h-16 text-gray-400" />
-                  </div>
-                )}
-                
-                {/* 상태 배지 */}
-                <div className="absolute top-2 right-2">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      vehicle.status === 'active'
-                        ? 'bg-green-100 text-green-800'
-                        : vehicle.status === 'reserved'
-                        ? 'bg-blue-100 text-blue-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}
-                  >
-                    {vehicle.status === 'active'
-                      ? '활성'
-                      : vehicle.status === 'reserved'
-                      ? '예약됨'
-                      : '비활성'}
-                  </span>
-                </div>
-              </div>
-
-              {/* 차량 정보 */}
-              <div className="p-4">
-                <h3 className="text-xl font-semibold mb-2">{vehicle.model}</h3>
-                <p className="text-gray-600 text-sm mb-4">
-                  {vehicle.year}년 · {vehicle.plate_number}
-                </p>
-
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center text-gray-600">
-                    <DollarSign className="w-4 h-4 mr-2" />
-                    {vehicle.price_per_day.toLocaleString()}원 / 일
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <Calendar className="w-4 h-4 mr-2" />
-                    {formatDate(vehicle.available_from)} ~{' '}
-                    {formatDate(vehicle.available_until)}
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <MapPin className="w-4 h-4 mr-2" />
-                    {vehicle.airport_location}
-                  </div>
-                </div>
-
-                {/* 액션 버튼들 */}
-                <div className="mt-4 flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => handleToggleStatus(vehicle.id, vehicle.status)}
-                  >
-                    {vehicle.status === 'active' ? '비활성화' : '활성화'}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(vehicle.id, vehicle.model)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
+              vehicle={vehicle}
+              showActions
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onToggleStatus={handleToggleStatus}
+            />
           ))}
         </div>
       )}
     </div>
   );
 }
-

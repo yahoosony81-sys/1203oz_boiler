@@ -1,325 +1,245 @@
-# 트립카셰어(TripCarShare) 개발 TODO
+# TripCarShare – Development TODO List (PRD 기반)
 
-> **최종 목표**: 제주 공항 기반 P2P 차량 공유 플랫폼 MVP 완성  
-> **검증 목표**: 렌트카 대체재로서 실제 수요와 공급 확인
+## PHASE 1 — 프로젝트 환경 & DB 구축
+
+### 1-1. 프로젝트 환경 세팅
+
+**Next.js / Clerk / Supabase 연결 확인**
+- [x] Next.js 15 프로젝트 실행 확인
+- [x] Clerk Provider 정상 동작 체크
+- [x] useUser 에러 해결 (캐시 삭제로 해결)
+- [x] Supabase 클라이언트 연결 확인
+
+**환경 변수 설정**
+- [x] NEXT_PUBLIC_SUPABASE_URL
+- [x] NEXT_PUBLIC_SUPABASE_ANON_KEY
+- [x] CLERK_PUBLISHABLE_KEY
+- [x] CLERK_SECRET_KEY
+
+### 1-2. DB Schema 생성 (Supabase)
+
+**users 테이블**
+- [x] clerk_id
+- [x] name
+- [x] phone
+- [x] role (owner/renter)
+- [x] is_verified
+
+**vehicles 테이블**
+- [x] owner_id
+- [x] model, year, plate_number
+- [x] description
+- [x] price_per_day
+- [x] images array
+- [x] available_from
+- [x] available_until
+- [x] airport_location
+- [x] parking_location
+- [x] status
+
+**bookings 테이블 (결제 포함)**
+- [x] vehicle_id
+- [x] renter_id
+- [x] start_date
+- [x] end_date
+- [x] total_price
+- [x] status (pending/approved/...)
+- [x] payment_status (unpaid/paid/failed)
+- [x] payment_id
+- [x] order_id
+
+### 1-3. Storage 구성
+- [x] vehicle-images 버킷 생성
+- [x] 업로드 규칙 설정
+- [x] 차량 이미지 저장 경로 설계: `{clerkId}/{vehicleId}/filename`
 
 ---
 
-## Phase 1: 기본 인프라 / DB 설계
-
-> **목표**: 프로젝트 기반을 안정적으로 구축하기
-
-### 1-1. 프로젝트 환경 점검
-- [ ] Next.js 15 + Clerk + Supabase 보일러플레이트 런타임 에러 해결
-  - [ ] useUser 등 인증 훅 관련 에러 수정
-  - [ ] 기본 페이지 로드 확인
-  - [ ] Clerk Provider 정상 작동 확인
-
-### 1-2. 데이터베이스 스키마 생성
-- [ ] **users 테이블** (사용자 확장 정보)
-  - [ ] 필수 필드: clerk_id, name, phone, role(owner/renter), is_verified
-  - [ ] 타임스탬프: created_at, updated_at
-  
-- [ ] **vehicles 테이블** (차량 정보)
-  - [ ] 기본 정보: id, owner_id(clerk_id), model, year, plate_number
-  - [ ] 상세 정보: description, price_per_day, images(array)
-  - [ ] 이용 가능 기간: available_from, available_until
-  - [ ] 위치 정보: airport_location, parking_location
-  - [ ] 상태: status(active, reserved, unavailable)
-  - [ ] 타임스탬프: created_at, updated_at
-
-- [ ] **bookings 테이블** (예약 정보)
-  - [ ] 관계: id, vehicle_id, renter_id
-  - [ ] 일정: start_date, end_date
-  - [ ] 상태: status(pending, approved, rejected, completed, cancelled)
-  - [ ] 위치: pickup_location, return_location
-  - [ ] 금액: total_price
-  - [ ] 타임스탬프: created_at, updated_at
-
-### 1-3. Supabase Storage 설정
-- [ ] vehicle-images 버킷 생성
-- [ ] 저장 구조: {clerk_user_id}/{vehicle_id}/{파일명}
-- [ ] 업로드 정책 설정
-
-### 1-4. RLS(Row Level Security) 정책 설정
-- [ ] vehicles 테이블
-  - [ ] 조회: 모두 가능 (공개)
-  - [ ] 등록/수정/삭제: 소유자만 가능
-- [ ] bookings 테이블
-  - [ ] 조회: 차주와 이용자 본인만 가능
-  - [ ] 등록: 인증된 사용자
-  - [ ] 수정: 차주(승인/거절), 이용자(취소)
-
----
-
-## Phase 2: 차량 등록 기능 (차주 사이드)
-
-> **목표**: 차주가 자신의 차량을 등록하고 관리할 수 있게 하기
+## PHASE 2 — 차량 등록 기능 (Owner)
 
 ### 2-1. 차량 등록 페이지 (/vehicles/new)
-- [ ] 입력 폼 구현
-  - [ ] 기본 정보: 차종, 연식, 번호판
-  - [ ] 상세 설명 입력란
-  - [ ] 일일 대여료 설정
-  - [ ] 이용 가능 기간 선택 (DateRangePicker)
-  - [ ] 공항 선택 (초기: 제주 국제공항)
-  - [ ] 주차 위치 입력
-  - [ ] 차량 사진 업로드 (최대 N장, 미리보기/삭제)
-  
-- [ ] Server Action: createVehicle
-  - [ ] 입력값 유효성 검사
-  - [ ] 이미지 업로드 → Supabase Storage
-  - [ ] vehicles 테이블에 데이터 저장
-  - [ ] 에러 핸들링 및 사용자 피드백
 
-### 2-2. 내 차량 관리 페이지 (/vehicles/my)
-- [ ] 내가 등록한 차량 목록 표시
-- [ ] 차량별 액션
-  - [ ] 수정 (Server Action: updateVehicle)
-  - [ ] 삭제 (Server Action: deleteVehicle)
-  - [ ] 활성화/비활성화 토글
-- [ ] 각 차량의 예약 현황 표시
+**입력 폼 UI 구현**
+- [x] 차종, 연식, 번호판
+- [x] 상세 설명
+- [x] 가격 설정
+- [x] 가능 날짜 선택 UI (DateRangePicker)
+- [x] 공항 선택
+- [x] 주차 위치 입력
+- [x] 이미지 업로드 (ImageUploader 컴포넌트)
+
+**Server Action: createVehicle**
+- [x] 입력값 검증
+- [x] 이미지 Supabase Storage 업로드
+- [x] vehicles 테이블 insert
+- [x] 작성자(owner_id) 자동 연결
+- [x] 업로드 실패 예외 처리
+- [x] 성공 후 redirect
+
+### 2-2. 내 차량 관리 (/vehicles/my)
+- [x] 내가 등록한 차량 목록 UI
+- [x] 차량 수정 페이지 연결 (링크만)
+- [x] 차량 삭제 기능
+- [x] 차량 활성/비활성 toggle
+- [ ] 해당 차량 예약 현황 summary 표시
 
 ---
 
-## Phase 3: 차량 검색 & 예약 신청 (이용자 사이드)
+## PHASE 3 — 차량 검색 & 예약 (Renter)
 
-> **목표**: 여행객이 원하는 차량을 찾고 예약 신청할 수 있게 하기
+### 3-1. 홈 검색 UI
+- [x] 날짜 선택
+- [x] 공항 선택
+- [x] 검색 버튼
 
-### 3-1. 홈 페이지 (/) + 검색 폼
-- [ ] 히어로 섹션 (서비스 소개)
-- [ ] 검색 폼
-  - [ ] 이용 시작일/종료일 선택
-  - [ ] 공항 선택 (초기: 제주 국제공항)
-  - [ ] 검색 버튼
-
-### 3-2. 검색 결과 페이지 (/vehicles)
-- [ ] 차량 카드 목록 표시
-  - [ ] 대표 이미지
-  - [ ] 차종, 연식
-  - [ ] 일일 가격
-  - [ ] 위치 정보
-- [ ] 필터 기능
-  - [ ] 가격 범위
+### 3-2. 검색 결과 (/vehicles)
+- [x] VehicleCard 리스트
+- [x] 필터 UI
+  - [x] 가격
   - [ ] 차종
-  - [ ] 연식
+  - [x] 연식
 
 ### 3-3. 차량 상세 페이지 (/vehicles/[id])
-- [ ] 이미지 갤러리 (여러 사진 슬라이드)
-- [ ] 차량 상세 정보
-  - [ ] 차종, 연식, 번호판
-  - [ ] 상세 설명
-  - [ ] 일일 대여료
-  - [ ] 공항/주차 위치
-- [ ] 소유자 기본 정보 (이름)
-- [ ] 이용 가능 날짜 달력
-- [ ] 예약 신청 폼
-  - [ ] 날짜 선택
-  - [ ] 총 금액 자동 계산
-  - [ ] 기본 대여 동의서 체크박스
-  - [ ] 신청 버튼
+- [x] 이미지 갤러리
+- [x] 기본 정보 (차종, 연식, 번호판)
+- [x] 상세 설명
+- [x] 가격
+- [x] 위치
+- [x] 이용 가능 날짜 UI 캘린더
+- [x] 총 금액 자동 계산
+- [x] 예약 신청 버튼
+
+**예약 상태에 따라 UI 다르게 표시**
+- [ ] pending → "승인 대기중"
+- [ ] approved → 결제 버튼 활성화
+- [ ] paid → "결제 완료 / 예약 내역 보기"
 
 ### 3-4. Server Action: createBooking
-- [ ] 입력값 검증
-- [ ] 날짜 중복 체크 (동시 예약 방지)
-- [ ] 트랜잭션 처리
-- [ ] bookings 테이블에 저장 (상태: pending)
-- [ ] 에러 핸들링
+- [x] 날짜 중복 체크
+- [x] 총 가격 계산
+- [x] bookings insert
+- [x] 상태 = pending
+- [x] 에러 처리
 
 ---
 
-## Phase 4: 예약 관리 기능
-
-> **목표**: 차주는 예약을 승인/거절하고, 이용자는 예약 상태를 확인하기
+## PHASE 4 — 예약 관리 기능
 
 ### 4-1. 차주용 예약 관리 (/bookings/received)
-- [ ] 받은 예약 요청 목록
-  - [ ] 예약자 정보
-  - [ ] 차량 정보
-  - [ ] 예약 기간
-  - [ ] 상태 (대기/승인/거절)
-- [ ] 예약 상세 페이지
-  - [ ] 예약 정보 상세
-  - [ ] 승인/거절 버튼
-- [ ] Server Action: approveBooking
-  - [ ] 상태를 approved로 변경
-  - [ ] 해당 기간 다른 예약 자동 거절
-- [ ] Server Action: rejectBooking
-  - [ ] 상태를 rejected로 변경
+- [ ] 예약 요청 목록
+- [ ] 예약 상세 모달 또는 상세 페이지
+- [ ] 승인 버튼
+- [ ] 거절 버튼
 
-### 4-2. 이용자용 예약 관리 (/bookings/my)
+**approveBooking**
+- [x] 상태 pending → approved (Server Action 완료)
+- [x] 해당 기간 다른 예약 자동 reject (Server Action 완료)
+
+**rejectBooking**
+- [x] 상태 rejected (Server Action 완료)
+
+### 4-2. 이용자 예약 관리 (/bookings/my)
 - [ ] 내가 신청한 예약 목록
-  - [ ] 차량 정보
-  - [ ] 예약 기간
-  - [ ] 상태 배지 (대기/승인/거절/완료)
-- [ ] 예약 취소 기능
-  - [ ] Server Action: cancelBooking
-
-### 4-3. 알림 기능
-- [ ] 예약 신청 시 차주에게 알림
-  - [ ] 페이지 상단 알림 Badge
-- [ ] 예약 승인/거절 시 이용자에게 알림
-  - [ ] 페이지 상단 알림 Badge
-- [ ] _(선택) 이메일/SMS 알림은 v1.1 이후_
+- [ ] 상태 배지 표시
+- [ ] 예약 취소 기능 (cancelBooking - Server Action 완료)
 
 ---
 
-## Phase 5: 약관 및 이용 가이드
+## PHASE 5 — 결제 기능 (Toss Payments) 통합
 
-> **목표**: 사용자가 안전하게 서비스를 이용할 수 있도록 안내하기
+### 5-1. 결제 버튼 활성화 조건
+- [ ] booking.status === "approved" 일 때만 표시
 
-### 5-1. 약관 페이지
-- [ ] 기본 대여 동의서 (/terms/rental-agreement)
-  - [ ] 책임 범위
-  - [ ] 사고 시 처리 방법
-  - [ ] 차량 사용 조건
-  - [ ] 예약 신청 시 체크박스 필수
+### 5-2. createPaymentIntent (결제 준비)
 
-### 5-2. 가이드 페이지 (/guide)
+**Server Action 구현**
+- [ ] orderId = bookingId 기반 생성
+- [ ] amount = total_price
+- [ ] Toss API 호출
+- [ ] 결제창 URL 반환
+- [ ] 사용자 redirect
+
+### 5-3. approvePayment (Redirect route)
+
+**Next.js route handler (/payments/approve)**
+- [ ] paymentKey, orderId 검증
+- [ ] Toss 승인 API 요청
+- [ ] Supabase에서 booking 조회
+- [ ] booking.payment_status = paid 업데이트
+- [ ] payment_id 저장
+- [ ] 성공 시 /payments/success로 이동
+
+### 5-4. failPayment (Redirect route)
+- [ ] Toss 실패 파라미터 받기
+- [ ] bookings.payment_status = failed
+- [ ] /payments/fail로 redirect
+
+### 5-5. webhookSync (선택)
+- [ ] Toss webhook route 생성
+- [ ] 중복호출 대비 idempotency 처리
+- [ ] 결제 취소/실패 시 bookings 업데이트
+
+### 5-6. 결제 UI
+
+**차량 상세 페이지**
+- [ ] "결제하기" 버튼
+- [ ] 로딩 처리
+- [ ] 결제 금액 표시
+
+**결제 성공 페이지 (/payments/success)**
+- [ ] 결제 금액
+- [ ] 예약 ID
+- [ ] 차량 정보
+- [ ] "예약 확인하기" 버튼
+
+**결제 실패 페이지 (/payments/fail)**
+- [ ] 실패 사유 표시
+- [ ] 재시도 버튼
+
+---
+
+## PHASE 6 — 약관 & 가이드
+
+### 6-1. 약관 페이지
+- [ ] 대여 동의서 페이지 생성
+- [ ] 예약 신청 시 "동의 체크박스" 필수
+
+### 6-2. 가이드 페이지
 - [ ] 차주용 가이드
-  - [ ] 차량 등록 방법
-  - [ ] 키 전달 방식
-  - [ ] 주차 위치 공유 방법
 - [ ] 이용자용 가이드
-  - [ ] 예약 방법
-  - [ ] 차량 픽업 절차
-  - [ ] 차량 반납 절차
 
 ---
 
-## Phase 6: UI/UX 및 공통 컴포넌트
-
-> **목표**: 일관되고 사용하기 편한 인터페이스 만들기
-
-### 6-1. 공통 컴포넌트 제작
-- [ ] DateRangePicker (날짜 범위 선택)
-- [ ] ImageUploader (이미지 업로드 + 미리보기)
-- [ ] VehicleCard (차량 카드)
-- [ ] BookingCard (예약 카드)
-- [ ] StatusBadge (상태 배지)
-
-### 6-2. 레이아웃
-- [ ] Navbar
-  - [ ] 로고
-  - [ ] 차량 검색 링크
-  - [ ] 내 차량 링크 (차주)
-  - [ ] 예약 관리 링크
-  - [ ] 프로필 메뉴 (로그인/로그아웃)
+## PHASE 7 — 공통 UI 컴포넌트
+- [x] DateRangePicker
+- [x] ImageUploader
+- [x] VehicleCard
+- [ ] BookingCard
+- [ ] StatusBadge
+- [x] Navbar
 - [ ] Footer
-  - [ ] 약관 링크
-  - [ ] 개인정보처리방침
-  - [ ] 연락처
-
-### 6-3. 랜딩/홍보 섹션
-- [ ] 홈 페이지 히어로 섹션
-  - [ ] "왜 트립카셰어인가?"
-  - [ ] 주요 장점 (저렴함, 편리함, 수익 창출)
-- [ ] 이용 방법 3단계 섹션
-  - [ ] 1단계: 차량 등록 (차주)
-  - [ ] 2단계: 검색 및 선택 (이용자)
-  - [ ] 3단계: 예약 및 이용
-- [ ] FAQ 섹션
-- [ ] CTA 버튼 (회원가입, 차량 등록 등)
 
 ---
 
-## Phase 7: 테스트 & 품질
-
-> **목표**: 안정적이고 안전한 서비스 만들기
-
-### 7-1. 기능별 플로우 테스트
-- [ ] 전체 플로우 테스트
-  - [ ] 차량 등록 → 검색 → 예약 신청 → 승인 → 완료
-  - [ ] 차량 등록 → 검색 → 예약 신청 → 거절
-
-### 7-2. 엣지 케이스 테스트
-- [ ] 날짜 중복 예약 시도
-- [ ] 네트워크 오류 시 재시도/에러 메시지
-- [ ] 검색 결과 없음 처리
-- [ ] 이미지 업로드 실패 처리
-- [ ] 잘못된 입력값 처리
-
-### 7-3. 보안 점검
-- [ ] RLS 정책 재점검
-- [ ] 입력값 검증 (XSS 방어)
-- [ ] 인증/세션 처리 확인
-- [ ] API 엔드포인트 보안 확인
+## PHASE 8 — 테스트
+- [ ] 차량 등록 → 검색 → 예약 → 승인 → 결제 전체 플로우 확인
+- [ ] 결제 실패/재시도 테스트
+- [ ] 중복 예약 테스트
+- [ ] 날짜 계산 검증
+- [ ] 이미지 업로드 실패 대응
+- [ ] 모바일 반응형 체크
 
 ---
 
-## Phase 8: 배포 & 모니터링
+## PHASE 9 — 배포
 
-> **목표**: 실제 사용자가 사용할 수 있도록 서비스 배포하기
+### 9-1. 배포 준비
+- [x] Vercel 프로젝트 생성
+- [x] 환경 변수 등록
+  - [x] Supabase URL/Key
+  - [x] Clerk 키
+  - [ ] Toss SecretKey
 
-### 8-1. 배포 준비
-- [ ] Vercel 프로젝트 생성
-- [ ] 환경 변수 설정
-  - [ ] Supabase URL, Key
-  - [ ] Clerk 키
-  - [ ] 도메인 설정
-
-### 8-2. 배포 및 확인
-- [ ] Vercel에 배포
-- [ ] 프로덕션 환경에서 기본 플로우 테스트
-- [ ] 모바일 반응형 확인
-
-### 8-3. 모니터링 설정
-- [ ] Vercel Analytics 확인
-- [ ] Supabase 로그 확인
-- [ ] _(선택) Sentry 등 에러 추적 도구 연동_
-
----
-
-## Phase 9: Post-Launch (v1.1 개선)
-
-> **목표**: 초기 사용자 피드백을 반영하여 서비스 개선하기
-
-### 9-1. UI/UX 개선
-- [ ] 차량 상세 페이지 UI 개선
-- [ ] 차량 등록 UX 개선
-- [ ] 검색 필터 확장 (변속기, 연료, 승차 인원 등)
-
-### 9-2. 운영 도구
-- [ ] 운영팀용 통계 뷰
-  - [ ] 등록 차량 수
-  - [ ] 예약 현황
-  - [ ] 활성 사용자 수
-
-### 9-3. 피드백 수집
-- [ ] 사용자 피드백 수집 기능 (간단 설문/문의 폼)
-- [ ] 초기 사용자 인터뷰
-
----
-
-## 성공 지표 (MVP 검증 기준)
-
-### 정량적 지표
-- [ ] 런칭 후 30일 내 등록 차량 30대 이상
-- [ ] 차량 상세 페이지 조회 대비 예약 요청 10% 이상
-- [ ] 차주 활성 사용자 수 추적
-- [ ] 이용자 활성 사용자 수 추적
-
-### 정성적 지표
-- [ ] 초기 사용자 피드백 수집
-  - [ ] 보험/사고 관련 불안 요소
-  - [ ] 검색/예약 플로우 난이도
-  - [ ] 키 전달 방식 만족도
-- [ ] NPS 설문 (목표 4.0 이상)
-
----
-
-## v2 이후 검토 항목 (현재 미구현)
-
-- 결제/정산 자동화
-- 리뷰/평가 기능
-- 실시간 GPS 위치 추적
-- 키박스/스마트키 하드웨어 연동
-- 전용 모바일 앱
-- 보험 API 연동
-- SMS/이메일 알림 자동화
-- 다른 공항으로 확장 (김포, 부산, 무안 등)
-
----
-
-**참고**: 각 Phase는 순차적으로 진행하며, 이전 Phase가 완료되어야 다음으로 넘어갑니다.  
-**문서 위치**: `docs/TODO.md`
+### 9-2. 배포 테스트
+- [ ] production 환경에서 결제 실제로 작동하는지 확인
+- [ ] 모바일 UI 재확인

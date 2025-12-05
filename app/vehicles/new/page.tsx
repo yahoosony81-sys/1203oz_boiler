@@ -2,372 +2,344 @@
  * @file app/vehicles/new/page.tsx
  * @description 차량 등록 페이지
  * 
- * 차주가 자신의 차량을 플랫폼에 등록하는 페이지입니다.
+ * 차주가 새로운 차량을 등록할 수 있는 폼 페이지입니다.
  * 
  * 주요 기능:
  * 1. 차량 기본 정보 입력 (차종, 연식, 번호판)
- * 2. 대여 조건 설정 (일일 대여료, 이용 가능 기간)
- * 3. 위치 정보 입력 (공항, 주차 위치)
- * 4. 차량 이미지 업로드
- * 
- * @dependencies
- * - @clerk/nextjs: 사용자 인증
- * - react-hook-form: 폼 관리
- * - actions/vehicles: Server Actions
+ * 2. 상세 설명 및 가격 설정
+ * 3. 이용 가능 날짜 선택
+ * 4. 공항 및 주차 위치 입력
+ * 5. 차량 이미지 업로드
  */
 
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
-import { createVehicle } from '@/actions/vehicles';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Upload, X, Loader2 } from 'lucide-react';
-import Link from 'next/link';
-import Image from 'next/image';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
+import { DateRange } from "react-day-picker";
+import { Car, MapPin, Calendar, DollarSign, FileText, ImageIcon } from "lucide-react";
 
-// Clerk Provider 사용으로 인한 동적 렌더링 강제
-export const dynamic = 'force-dynamic';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { DateRangePicker } from "@/components/date-range-picker";
+import { ImageUploader } from "@/components/image-uploader";
+import { createVehicle } from "@/actions/vehicle-actions";
+import { AIRPORTS } from "@/types/vehicle";
+
+export const dynamic = "force-dynamic";
 
 export default function NewVehiclePage() {
   const router = useRouter();
-  const { user, isLoaded } = useUser();
+  const { isLoaded, isSignedIn, user } = useUser();
+  
+  // 폼 상태
+  const [model, setModel] = useState("");
+  const [year, setYear] = useState<number>(new Date().getFullYear());
+  const [plateNumber, setPlateNumber] = useState("");
+  const [description, setDescription] = useState("");
+  const [pricePerDay, setPricePerDay] = useState<number>(50000);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [airportLocation, setAirportLocation] = useState("");
+  const [parkingLocation, setParkingLocation] = useState("");
+  const [images, setImages] = useState<string[]>([]);
+  
+  // UI 상태
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [images, setImages] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-
-  console.group('🚗 NewVehiclePage Render');
-  console.log('User loaded:', isLoaded);
-  console.log('User ID:', user?.id);
-  console.log('Images count:', images.length);
-  console.groupEnd();
 
   // 로그인 체크
-  if (isLoaded && !user) {
-    router.push('/sign-in');
-    return null;
-  }
-
-  // 이미지 선택 핸들러
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('📸 handleImageChange');
-    
-    const files = e.target.files;
-    if (!files) return;
-
-    const newImages: File[] = [];
-    const newPreviews: string[] = [];
-
-    Array.from(files).forEach((file) => {
-      // 이미지 파일 검증
-      if (!file.type.startsWith('image/')) {
-        alert('이미지 파일만 업로드할 수 있습니다.');
-        return;
-      }
-
-      // 파일 크기 검증 (10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        alert('파일 크기는 10MB 이하여야 합니다.');
-        return;
-      }
-
-      newImages.push(file);
-
-      // 미리보기 생성
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        newPreviews.push(reader.result as string);
-        if (newPreviews.length === files.length) {
-          setImagePreviews((prev) => [...prev, ...newPreviews]);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
-
-    setImages((prev) => [...prev, ...newImages]);
-    console.log('✅ Images added:', newImages.length);
-  };
-
-  // 이미지 삭제 핸들러
-  const handleRemoveImage = (index: number) => {
-    console.log('🗑️ Removing image at index:', index);
-    
-    setImages((prev) => prev.filter((_, i) => i !== index));
-    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
-    
-    console.log('✅ Image removed');
-  };
-
-  // 폼 제출 핸들러
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    
-    console.group('📝 handleSubmit');
-    setError(null);
-    setIsSubmitting(true);
-
-    try {
-      const formData = new FormData(e.currentTarget);
-
-      // 이미지 추가
-      images.forEach((image, index) => {
-        formData.append(`image_${index}`, image);
-      });
-
-      console.log('📤 Submitting form data...');
-      console.log('Form values:', {
-        model: formData.get('model'),
-        year: formData.get('year'),
-        plate_number: formData.get('plate_number'),
-        price_per_day: formData.get('price_per_day'),
-        available_from: formData.get('available_from'),
-        available_until: formData.get('available_until'),
-        airport_location: formData.get('airport_location'),
-        imageCount: images.length,
-      });
-
-      const result = await createVehicle(formData);
-
-      if (result.success) {
-        console.log('✅ Vehicle created successfully:', result.data);
-        alert(result.message || '차량이 등록되었습니다!');
-        router.push('/vehicles/my');
-      } else {
-        console.error('❌ Failed to create vehicle:', result.error);
-        setError(result.error || '차량 등록에 실패했습니다.');
-      }
-    } catch (err) {
-      console.error('❌ Error in handleSubmit:', err);
-      setError('차량 등록 중 오류가 발생했습니다.');
-    } finally {
-      setIsSubmitting(false);
-      console.groupEnd();
-    }
-  };
-
-  if (!isLoaded || !user) {
+  if (!isLoaded) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin" />
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
+  if (!isSignedIn) {
+    return (
+      <div className="max-w-2xl mx-auto p-6 text-center">
+        <h1 className="text-2xl font-bold mb-4">로그인이 필요합니다</h1>
+        <p className="text-gray-600 mb-4">차량을 등록하려면 먼저 로그인해주세요.</p>
+        <Button onClick={() => router.push("/sign-in")}>로그인</Button>
+      </div>
+    );
+  }
+
+  // 폼 유효성 검사
+  const isFormValid = () => {
+    return (
+      model.trim() !== "" &&
+      year > 1990 &&
+      year <= new Date().getFullYear() + 1 &&
+      plateNumber.trim() !== "" &&
+      pricePerDay > 0 &&
+      dateRange?.from &&
+      dateRange?.to &&
+      airportLocation !== ""
+    );
+  };
+
+  // 폼 제출
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!isFormValid()) {
+      setError("필수 항목을 모두 입력해주세요.");
+      return;
+    }
+    
+    setIsSubmitting(true);
+    setError(null);
+    
+    console.group("[NewVehiclePage] 차량 등록 제출");
+    console.log("사용자:", user?.id);
+    
+    try {
+      const result = await createVehicle(
+        {
+          model,
+          year,
+          plate_number: plateNumber,
+          description,
+          price_per_day: pricePerDay,
+          available_from: dateRange!.from!,
+          available_until: dateRange!.to!,
+          airport_location: airportLocation,
+          parking_location: parkingLocation,
+        },
+        images
+      );
+      
+      if (result.success) {
+        console.log("등록 성공:", result.data);
+        console.groupEnd();
+        router.push("/vehicles/my");
+      } else {
+        console.error("등록 실패:", result.error);
+        console.groupEnd();
+        setError(result.error || "차량 등록에 실패했습니다.");
+      }
+    } catch (err) {
+      console.error("예외 발생:", err);
+      console.groupEnd();
+      setError("오류가 발생했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // 연식 옵션 생성 (최근 20년)
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 21 }, (_, i) => currentYear - i);
+
   return (
-    <div className="container max-w-2xl mx-auto py-8 px-4">
-      {/* 헤더 */}
+    <div className="max-w-3xl mx-auto p-6">
       <div className="mb-8">
-        <Link 
-          href="/vehicles/my" 
-          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-4"
-        >
-          <ArrowLeft className="w-4 h-4 mr-1" />
-          내 차량으로 돌아가기
-        </Link>
-        <h1 className="text-3xl font-bold">차량 등록</h1>
+        <h1 className="text-3xl font-bold text-gray-900">차량 등록</h1>
         <p className="text-gray-600 mt-2">
-          여행을 떠나는 동안 차량을 공유하고 수익을 창출하세요.
+          공유할 차량 정보를 입력해주세요.
         </p>
       </div>
 
-      {/* 에러 메시지 */}
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-800">{error}</p>
-        </div>
-      )}
-
-      {/* 차량 등록 폼 */}
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* 기본 정보 섹션 */}
-        <div className="bg-white p-6 rounded-lg border">
-          <h2 className="text-xl font-semibold mb-4">기본 정보</h2>
-          
-          <div className="space-y-4">
-            {/* 차종 */}
-            <div>
-              <Label htmlFor="model">차종 *</Label>
+        {/* 차량 기본 정보 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Car className="w-5 h-5" />
+              차량 기본 정보
+            </CardTitle>
+            <CardDescription>차량의 기본적인 정보를 입력해주세요.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="model">차종 *</Label>
+                <Input
+                  id="model"
+                  placeholder="예: 현대 아반떼"
+                  value={model}
+                  onChange={(e) => setModel(e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="year">연식 *</Label>
+                <Select
+                  value={year.toString()}
+                  onValueChange={(value) => setYear(parseInt(value))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="연식 선택" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {yearOptions.map((y) => (
+                      <SelectItem key={y} value={y.toString()}>
+                        {y}년
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="plateNumber">차량 번호판 *</Label>
               <Input
-                id="model"
-                name="model"
-                type="text"
-                placeholder="예: 현대 아반떼, 기아 K5"
+                id="plateNumber"
+                placeholder="예: 12가 3456"
+                value={plateNumber}
+                onChange={(e) => setPlateNumber(e.target.value)}
                 required
               />
             </div>
+          </CardContent>
+        </Card>
 
-            {/* 연식 & 번호판 */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="year">연식 *</Label>
-                <Input
-                  id="year"
-                  name="year"
-                  type="number"
-                  placeholder="2020"
-                  min="1900"
-                  max={new Date().getFullYear() + 1}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="plate_number">번호판 *</Label>
-                <Input
-                  id="plate_number"
-                  name="plate_number"
-                  type="text"
-                  placeholder="12가3456"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* 상세 설명 */}
-            <div>
-              <Label htmlFor="description">상세 설명</Label>
+        {/* 상세 설명 및 가격 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              상세 정보
+            </CardTitle>
+            <CardDescription>차량에 대한 추가 정보를 입력해주세요.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="description">차량 설명</Label>
               <Textarea
                 id="description"
-                name="description"
-                placeholder="차량의 특징, 옵션, 주의사항 등을 자유롭게 작성해주세요."
+                placeholder="차량의 특징, 상태, 옵션 등을 자유롭게 설명해주세요."
                 rows={4}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
               />
             </div>
-          </div>
-        </div>
-
-        {/* 대여 조건 섹션 */}
-        <div className="bg-white p-6 rounded-lg border">
-          <h2 className="text-xl font-semibold mb-4">대여 조건</h2>
-          
-          <div className="space-y-4">
-            {/* 일일 대여료 */}
-            <div>
-              <Label htmlFor="price_per_day">일일 대여료 (원) *</Label>
+            
+            <div className="space-y-2">
+              <Label htmlFor="pricePerDay" className="flex items-center gap-2">
+                <DollarSign className="w-4 h-4" />
+                일일 대여료 (원) *
+              </Label>
               <Input
-                id="price_per_day"
-                name="price_per_day"
+                id="pricePerDay"
                 type="number"
-                placeholder="50000"
-                min="0"
+                min={10000}
+                step={1000}
+                value={pricePerDay}
+                onChange={(e) => setPricePerDay(parseInt(e.target.value) || 0)}
                 required
               />
-              <p className="text-sm text-gray-500 mt-1">
-                하루 대여 시 받고 싶은 금액을 입력해주세요.
+              <p className="text-sm text-gray-500">
+                권장 가격: 30,000원 ~ 100,000원
               </p>
             </div>
+          </CardContent>
+        </Card>
 
-            {/* 이용 가능 기간 */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="available_from">이용 시작 가능일 *</Label>
-                <Input
-                  id="available_from"
-                  name="available_from"
-                  type="datetime-local"
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="available_until">이용 종료일 *</Label>
-                <Input
-                  id="available_until"
-                  name="available_until"
-                  type="datetime-local"
-                  required
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 위치 정보 섹션 */}
-        <div className="bg-white p-6 rounded-lg border">
-          <h2 className="text-xl font-semibold mb-4">위치 정보</h2>
-          
-          <div className="space-y-4">
-            {/* 공항 선택 */}
-            <div>
-              <Label htmlFor="airport_location">공항 *</Label>
-              <Input
-                id="airport_location"
-                name="airport_location"
-                type="text"
-                defaultValue="제주 국제공항"
-                required
-              />
-              <p className="text-sm text-gray-500 mt-1">
-                현재는 제주 국제공항만 지원합니다.
-              </p>
-            </div>
-
-            {/* 주차 위치 */}
-            <div>
-              <Label htmlFor="parking_location">주차 위치 상세</Label>
-              <Textarea
-                id="parking_location"
-                name="parking_location"
-                placeholder="예: 제주공항 장기주차장 A구역 3층"
-                rows={2}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* 차량 사진 섹션 */}
-        <div className="bg-white p-6 rounded-lg border">
-          <h2 className="text-xl font-semibold mb-4">차량 사진</h2>
-          
-          {/* 이미지 업로드 버튼 */}
-          <div className="mb-4">
-            <Label 
-              htmlFor="images" 
-              className="cursor-pointer inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              사진 추가
-            </Label>
-            <Input
-              id="images"
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleImageChange}
-              className="hidden"
+        {/* 이용 가능 기간 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="w-5 h-5" />
+              이용 가능 기간
+            </CardTitle>
+            <CardDescription>차량을 대여할 수 있는 기간을 선택해주세요.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <DateRangePicker
+              dateRange={dateRange}
+              onDateRangeChange={setDateRange}
+              placeholder="이용 가능 기간 선택"
             />
-            <p className="text-sm text-gray-500 mt-2">
-              차량의 외관, 내부, 대시보드 등을 촬영해주세요. (최대 10MB)
-            </p>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* 이미지 미리보기 */}
-          {imagePreviews.length > 0 && (
-            <div className="grid grid-cols-3 gap-4">
-              {imagePreviews.map((preview, index) => (
-                <div key={index} className="relative group">
-                  <Image
-                    src={preview}
-                    alt={`Preview ${index + 1}`}
-                    width={200}
-                    height={200}
-                    className="w-full h-32 object-cover rounded-lg"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveImage(index)}
-                    className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
+        {/* 위치 정보 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="w-5 h-5" />
+              위치 정보
+            </CardTitle>
+            <CardDescription>차량 픽업 위치 정보를 입력해주세요.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="airportLocation">공항 *</Label>
+              <Select
+                value={airportLocation}
+                onValueChange={setAirportLocation}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="공항 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(AIRPORTS).map(([key, value]) => (
+                    <SelectItem key={key} value={value}>
+                      {value}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
-          )}
-        </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="parkingLocation">주차 위치 상세</Label>
+              <Input
+                id="parkingLocation"
+                placeholder="예: 제1주차장 B구역 123번"
+                value={parkingLocation}
+                onChange={(e) => setParkingLocation(e.target.value)}
+              />
+              <p className="text-sm text-gray-500">
+                이용자가 차량을 찾을 수 있도록 구체적인 위치를 입력해주세요.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* 차량 이미지 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ImageIcon className="w-5 h-5" />
+              차량 이미지
+            </CardTitle>
+            <CardDescription>
+              차량 사진을 업로드해주세요. 첫 번째 사진이 대표 이미지가 됩니다.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ImageUploader
+              images={images}
+              onImagesChange={setImages}
+              maxImages={5}
+              folderPath="vehicles"
+            />
+          </CardContent>
+        </Card>
+
+        {/* 에러 메시지 */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            {error}
+          </div>
+        )}
 
         {/* 제출 버튼 */}
         <div className="flex justify-end gap-4">
@@ -381,15 +353,16 @@ export default function NewVehiclePage() {
           </Button>
           <Button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isFormValid()}
+            className="min-w-[120px]"
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <span className="animate-spin mr-2">⏳</span>
                 등록 중...
               </>
             ) : (
-              '차량 등록'
+              "차량 등록"
             )}
           </Button>
         </div>
@@ -397,4 +370,3 @@ export default function NewVehiclePage() {
     </div>
   );
 }
-

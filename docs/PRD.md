@@ -1,530 +1,319 @@
-트립카셰어(TripCarShare)
+🚗 TripCarShare PRD (결제 기능 포함 최신 버전)
 
-공항 기반 P2P 차량 공유 플랫폼 PRD (템플릿 구조 버전)
+제주 공항 기반 P2P 차량 공유 플랫폼 – MVP + 결제 통합 버전
 
-1. 프로젝트 개요 (Overview)
-1-1. 목적
+1. Overview
+1.1 Problem Statement
 
-핵심 목표
+제주도 여행객은 시즌마다 렌트카 부족 및 가격 폭등 문제를 겪는다. 반면 제주도민의 차량은 공항에 장기간 주차되며 유휴 상태로 남는다.
+TripCarShare는 “도착 여행자가 출발 여행자의 차량을 이용하는” 새로운 P2P 차량 공유 모델을 제시한다.
 
-제주 공항을 시작으로, 공항 기반 P2P 차량 공유 서비스의 실제 수요와 공급을 검증한다.
+1.2 Why Important
 
-유휴 차량(차주)과 차량이 필요한 여행객(사용자)을 연결하는 마켓플레이스 모델의 실효성을 확인한다.
+렌트카 공급 문제 해결
 
-검증 가설
+주차장 회전율 증가
 
-렌트카 부족/고비용 문제를 겪는 여행객은, P2P 차량 공유라는 대안을 실제로 사용하려고 할 것이다.
+차주에게는 “주차비 + 부가 수익”
 
-제주도민 차주는 공항에 차를 세워두는 대신, 주차비 절감 + 추가 수익을 얻을 수 있다면 차량 등록을 할 것이다.
+이용자에게는 “더 저렴한 차량 이용”
 
-웹 기반 반응형 MVP만으로도 검색 → 예약 요청 → 승인/거절 → 이용 종료까지의 기본 플로우를 수행하는 데에는 큰 저항이 없다.
+2. Goals
+2.1 MVP Goals
 
-출시 형태
+차량 등록 → 검색 → 예약 → 결제까지 가능한 end-to-end 플로우 완성
 
-반응형 웹 서비스(MVP)
+실제 수요/공급 검증 및 행동 데이터 확보
 
-웹상에서:
+2.2 Success Metrics
 
-차량 등록
+예약 요청 대비 결제 전환율
 
-차량 검색/예약 요청
+승인율 / 취소율
 
-예약 승인/거절
+30일 내 차량 30대 이상 등록
 
-기본 대여 동의서 확인
+결제 10건 이상 발생
 
-결제, 보험, 리뷰 등은 v2 이후 도입 (v1은 예약/매칭 검증에 집중)
+3. Users
+Owner (차주)
 
-1-2. 문제 정의 (Problem Statement)
+차량 등록 및 일정 관리
 
-문제
+예약 승인 또는 거절
 
-제주도 성수기에는 렌트카가 부족하고, 가격이 비정상적으로 상승한다.
+정산 내역 확인 가능
 
-원하는 일정에 맞게 차량을 구하지 못해 여행 계획 전체가 흔들리는 경우가 많다.
+Renter (이용자)
 
-반대로, 제주도민 차주는 타지로 떠날 때 제주 공항 주차장에 장기간 주차하며 비용만 지불하고 차량을 놀린다.
+차량 검색 → 상세 정보 확인
 
-“차가 필요한 사람”과 “차를 놀리고 있는 사람”을 이어주는 구조가 없다.
+예약 신청 및 결제 진행
 
-왜 중요한가
+결제 내역 확인
 
-제주 지역은 대중교통 인프라가 충분하지 않아 차량 의존도가 높다.
+4. Requirements
+4.1 Core Features (MVP)
 
-렌트카 공급은 한계가 있고, 성수기마다 동일한 수급 문제가 반복된다.
+아래는 "결제 포함 버전" 기준 핵심 기능 목록입니다.
 
-유휴 차량을 공유하면, 공급을 빠르게 확장할 수 있으며:
+4.1.1 차량 등록 (Owner)
 
-차주는 주차비 절감 + 수익창출
+차량 기본 정보 입력
 
-여행객은 렌트카보다 저렴하고 유연한 이동수단을 확보할 수 있다.
+주차 위치 및 공항 선택
 
-1-3. 타겟 고객
+사용 가능 날짜 범위 지정
 
-차량 사용자(여행객/출장객)
+차량 이미지 업로드
 
-연령대: 20~50대 전국 거주자
+가격(per day) 설정
 
-상황:
+차량 활성/비활성 관리
 
-제주 여행을 준비하며 렌트카를 검색하지만,
+4.1.2 차량 검색 및 상세 조회 (Renter)
 
-원하는 날짜에 차량이 없거나
+날짜/공항 기반 검색
 
-가격이 너무 비싸서 부담을 느끼는 사용자
+가격/연식/모델 필터
 
-니즈:
+상세 정보 조회
 
-일정에 맞게 이용 가능한 차량
+총 금액 자동 계산
 
-기존 렌트카보다 저렴/유연한 옵션
+예약하기 버튼 → 예약 신청
 
-공항에서 바로 이용할 수 있는 편의성
+4.1.3 예약 시스템
+예약 생성(createBooking)
 
-차량 제공자(차주, 제주도민)
+일정 중복 체크
 
-제주도 거주자로, 출장/여행/업무 등으로 일정 기간 제주를 떠나는 사람
+pending 상태로 생성
 
-상황:
+차주에게 알림
 
-차량을 제주 공항 주차장에 장기간 세워두고 주차비를 부담하고 있음
+예약 승인/거절(approveBooking / rejectBooking)
 
-니즈:
+차주가 승인 시 해당 기간 블록 처리
 
-주차비를 상쇄하거나 줄일 수 있는 방법
+승인된 예약만 결제 진행 가능
 
-차량이 놀고 있는 동안 추가 수익을 얻고 싶은 욕구
+거절 시 이용자에게 알림
 
-번거롭지 않은 키 전달/반납 구조
+4.1.4 결제(Payment) → Toss Payments 연동
+핵심 흐름:
 
-1-4. 전략적 적합성
+이용자가 예약 승인 상태 확인
 
-공유경제/유휴자산 활용 모델과 정합성이 높다.
+“결제하기” 버튼 활성화
 
-제주 공항을 시작으로, **타 공항(김포, 부산, 무안 등)**으로 확장이 가능하다.
+Toss Payments 결제창 호출
 
-초기에는 웹 MVP로 시작하여, 시장 검증 후:
+결제 성공 시 bookings.payment_status = paid
 
-결제/보험/리뷰/키 시스템 등을 단계적으로 추가할 수 있다.
+결제 실패 시 bookings.payment_status = failed
 
-시장 진입 장벽:
+요구 기능 상세
+1) Toss API 사용 방식
 
-초기에는 규제/보험 등을 단순화한 형태로 시작할 수 있고,
+결제 준비 API 호출(Server action)
 
-P2P 중개 플랫폼 관점에서 접근 가능하다고 가정한다.
+결제 승인 Redirect URL 처리(Route handler)
 
-1-5. 핵심 전제 및 가정
+결제 성공/실패 Webhook 처리
 
-제주도민 중, 일정 기간 동안 차량을 공항에 장기간 주차하는 유저 풀이 충분하다.
+Supabase에 결제 기록 저장
 
-여행객은 기존 렌트카 외에 새로운 대체 수단에 대해 어느 정도 수용성이 있다.
+2) 결제 시 생성되는 데이터
 
-초기 버전에서는:
+payment_id (toss paymentKey)
 
-보험은 기본 동의서 및 기존 자동차 보험 범위 안에서 최소화된 형태로 운영(향후 API 연동).
+order_id (booking_id 기반 생성)
 
-키 전달/반납은 텍스트 가이드와 주차 위치 공유로 해결.
+amount
 
-정산은 운영팀이 수동 처리하는 것을 전제로 함.
+status (paid, failed)
 
-규제는 “P2P 중개 플랫폼(연결 역할)”을 기본 구조로 설정하여, v1에서 최소한의 리스크로 운영 가능하다고 가정.
+approved_at
 
-2. 타겟 사용자 (User)
-Primary Users
+3) 결제 UI
 
-차량 사용자 (여행/출장 등 이동 수요자)
+차량 상세 페이지 “예약 승인 후” 우측 결제 박스 고정
 
-20~50대, 온라인 예약에 익숙한 사용자
+Toss 결제 버튼
 
-모바일/웹에서 렌트카를 예약해본 경험이 있음
+결제 금액 표시
 
-가격 민감도 높고, 일정 확정 후 차량을 빠르게 확보하고 싶어함
+결제 진행 중 로딩 처리
 
-차량 제공자 (차주, 제주도민)
+4.2 Optional Features (v1.1 이후)
 
-자차 보유자, 일정 기간 제주를 떠나는 사람
+정산 페이지 (owner payout, 은행 계좌 등록)
 
-“어차피 세워둘 차라면, 비용을 줄이면서 수익을 얻고 싶다”는 동기
+영수증 이메일 발송
 
-3. 기술 스택 (Tech Stack)
-Package Manager
+SMS 알림
 
-pnpm
+보험 API 연동
 
-Frontend
+5. Product Flow
+5.1 사용자 전체 흐름 (with 결제)
+flowchart TD
 
-Next.js 15 (App Router)
+A[차량 검색] --> B[차량 선택]
+B --> C[날짜 선택 및 예약 신청]
+C --> D[차주 승인 대기]
+D -->|승인| E[결제 버튼 활성화]
+E --> F[Toss Payments 결제창]
+F -->|성공| G[결제 완료 → booking=paid]
+F -->|실패| H[결제 실패, 재시도 안내]
+G --> I[이용자 예약 확인 페이지]
+I --> J[차량 픽업 및 사용]
 
-React + TypeScript
+6. Pages & UI Requirements
+6.1 차량 상세 페이지 (/vehicles/[id])
+구성
 
-Tailwind CSS
+상단: 이미지 갤러리 + 기본 정보
 
-기본적인 UI 컴포넌트(카드, 버튼, 모달, DateRangePicker 등) 제작
+중단: 설명, 위치, 이용 가능 날짜
 
-Backend & Database
+우측 고정 섹션:
 
-Supabase (PostgreSQL)
+가격 / 일
 
-테이블 예시
+총 금액
 
-users (Clerk 사용자 확장 정보: phone, role, is_verified 등)
+예약 신청 버튼
 
-vehicles (차량 정보 + 사용 가능 기간)
+예약 승인 후 → 결제 버튼 등장
 
-bookings (예약 정보)
+신규 포함 UI
 
-RLS 사용 (차주/예약 당사자 기준 접근 제어)
+"결제하기(Toss Payments)"
 
-Supabase Storage
+결제 진행 모달 또는 외부 결제창
 
-버킷: vehicle-images
+6.2 결제 완료 페이지 (/payments/success)
 
-차량 이미지 저장 (clerk_user_id/vehicle_id/파일명 구조)
+결제 금액
 
-인증
+예약 ID
 
-Clerk
+차량 정보
 
-이메일/비밀번호 + SMS 인증 (선택)
+사용 안내 문구
 
-로그인/회원가입/세션 관리
+예약 페이지로 이동 버튼
 
-Supabase users 테이블과 Clerk user_id 연동
+6.3 결제 실패 페이지 (/payments/fail)
 
-기타 외부 서비스 (향후/선택)
+실패 사유
 
-SMS 인증 API (Clerk 또는 별도)
+재결제 버튼
 
-이메일 발송 API
+7. Database Schema (결제 필드 포함)
+7.1 bookings 테이블 수정
+필드명	타입	설명
+id	uuid	기본 PK
+vehicle_id	uuid	차량 FK
+renter_id	uuid	사용자 FK
+start_date	date	대여 시작
+end_date	date	대여 종료
+total_price	int	총 결제 금액
+status	enum	pending / approved / rejected / completed / cancelled
+payment_status	enum	unpaid / paid / failed
+payment_id	text	toss paymentKey
+order_id	text	toss orderId
+created_at	timestamp	
+updated_at	timestamp	
+8. API / Server Action Requirements
+8.1 createPaymentIntent (결제 준비)
 
-지도 API (공항/주차 위치 안내용)
+Toss API 호출
 
-v2에서 보험 API, 결제 PG 연동
+orderId 생성 (booking-uuid)
 
-4. 개발 우선순위 (Roadmap)
-Phase 1: 기본 인프라 / DB 설계
+amount 전달
 
- Next.js 15 + Clerk + Supabase 보일러플레이트 확인 및 런타임 에러 해결
+returnUrl / failUrl 포함
 
- 데이터베이스 스키마 설계 및 생성
+8.2 approvePayment (리디렉션 처리)
 
-users (phone, role(owner/renter), is_verified)
+Toss 승인 API 호출
 
-vehicles
+paymentKey 검증
 
-id, owner_id(clerk_id), model, year, plate_number
+supabase bookings.payment_status 업데이트
 
-description, price_per_day, images(array)
+8.3 webhookSync (옵션)
 
-available_from, available_until
+Toss webhook으로 결제 상태 변동 추적
 
-airport_location, parking_location
+결제 중도 취소 / 실패 대응
 
-status(active, reserved, unavailable)
+9. Technical Architecture
+9.1 Frontend
 
-created_at, updated_at
+Next.js 15 App Router
 
-bookings
+Server Actions로 결제 생성
 
-id, vehicle_id, renter_id
+결제 성공/실패 Redirect Route 처리
 
-start_date, end_date
+9.2 Backend
 
-status(pending, approved, rejected, completed, cancelled)
+Supabase DB
 
-pickup_location, return_location
+Supabase Auth × Clerk ID 연동
 
-total_price
+Toss Payments REST API
 
-created_at, updated_at
+9.3 Storage
 
- Supabase Storage vehicle-images 버킷 생성
+차량 이미지 Supabase Storage
 
- 기본 RLS 정책 설정
+10. Non-Functional Requirements
+성능
 
-차량: 소유자만 수정/삭제, 모두 조회 가능
+결제 요청 200ms 이내 응답 목표
 
-예약: 당사자(차주/이용자)만 상세 조회 가능
+보안
 
-Phase 2: 차량 등록 기능 (Owner 사이드)
+paymentKey는 server-only 저장
 
- /vehicles/new 차량 등록 페이지
+booking approval 이후만 결제 가능
 
-차종, 연식, 번호판, 설명, 일일 대여료
+안정성
 
-이용 가능 기간(날짜 범위 선택)
+Toss webhook 중복 호출 대비
 
-공항/주차 위치 입력
+DB 트랜잭션 사용
 
-차량 사진 업로드(최대 N장, 미리보기/삭제)
+11. Out of Scope (MVP)
 
- Server Action createVehicle
+OTA(렌터카 수준) 보험 연동
 
-이미지 업로드 → 이미지 URL 저장
+실시간 차량 위치 확인(GPS)
 
-vehicles 테이블에 insert
+정산/송금 자동화
 
-유효성 검사 + 에러 핸들링
+모바일 앱
 
- /vehicles/my 내 차량 관리 페이지
+12. Risks
 
-내가 등록한 차량 리스트
+차주와 이용자 간 키 전달 문제
 
-수정/삭제/활성화 토글
+사고 발생 시 책임 범위
 
-updateVehicle, deleteVehicle Server Action 구현
+결제 취소/환불 정책
 
-Phase 3: 차량 검색 & 예약 신청 (Renter 사이드)
+13. Future Enhancements
 
- / 홈 + 검색 폼
+차주 정산 자동화(Payouts)
 
-이용 시작일/종료일
+보험 API 연동
 
-공항 선택(초기: 제주 국제공항)
+차량 평가/리뷰 기능
 
- /vehicles 검색 결과 페이지
-
-차량 카드 목록 (이미지, 차종, 가격, 위치 등)
-
-기본 필터: 가격, 차종, 연식
-
- /vehicles/[id] 차량 상세 페이지
-
-이미지 갤러리
-
-차량 상세 정보 + 소유자 기본 정보(이름)
-
-이용 가능 날짜 달력
-
-예약 신청 폼 (날짜 선택 시 총 금액 계산)
-
- 예약 생성 Server Action createBooking
-
-날짜 중복 체크
-
-트랜잭션 처리로 동시 예약 방지
-
-상태: pending으로 생성
-
-Phase 4: 예약 관리 기능
-
-차주(Owner)
-
- /bookings/received
-
-받은 예약 요청 리스트
-
-예약 상세 + 승인/거절 버튼
-
- approveBooking, rejectBooking Server Action
-
-상태 업데이트
-
-승인 시 해당 기간 중복 예약 방지
-
-이용자(Renter)
-
- /bookings/my
-
-내가 신청한 예약 목록
-
-상태(대기/승인/거절/완료) 표시
-
-예약 취소 기능
-
-알림
-
- 예약 신청 시 차주에게 알림(페이지 상단 알림/Badge)
-
- 예약 승인/거절 시 이용자에게 알림
-
-(이메일/SMS 알림은 선택, v1.1 이후로 미룸)
-
-Phase 5: 약관 및 이용 가이드
-
- /terms/rental-agreement
-
-기본 대여 동의서(책임 범위, 사고 시 처리, 사용 조건)
-
-예약 신청 시 “동의합니다” 체크박스 필수
-
- /guide
-
-차주용 가이드: 차량 등록, 키 전달 방식, 주차 위치 공유 방법
-
-이용자용 가이드: 예약, 픽업, 반납 플로우
-
-Phase 6: UI/UX 및 공통 컴포넌트
-
- 공통 컴포넌트
-
-DateRangePicker
-
-ImageUploader
-
-VehicleCard, BookingCard
-
-StatusBadge
-
- 레이아웃
-
-Navbar: 로고, 차량 검색, 내 차량, 예약 관리, 프로필
-
-Footer: 약관, 개인정보처리방침, 연락처
-
- 랜딩/홍보 섹션
-
-“왜 트립카셰어인가?”
-
-이용 방법 3단계: 차량 등록 / 검색 / 예약
-
-FAQ, CTA 버튼
-
-Phase 7: 테스트 & 품질
-
- 기능별 플로우 테스트
-
-차량 등록 → 검색 → 예약 요청 → 승인/거절 → 완료
-
- 엣지 케이스
-
-날짜 중복 예약
-
-네트워크 오류 시 재시도/에러 메시지
-
-검색 결과 없음
-
- 보안
-
-RLS 재점검
-
-입력값 검증 및 XSS 방어
-
-인증/세션 처리 확인
-
-Phase 8: 배포 & 모니터링
-
- Vercel 배포
-
- 환경 변수 설정 (Supabase, Clerk, 도메인 등)
-
- Vercel Analytics + Supabase 로그 확인
-
- 에러 추적 도구(Optional, Sentry 등)
-
-Phase 9: Post-Launch (v1.1 개선)
-
-차량 상세 페이지 UI 개선
-
-검색 필터 확장 (변속기, 연료, 승차 인원 등)
-
-차량 등록 UX 개선
-
-운영팀용 간단 통계 뷰 (등록 차량 수, 예약 현황)
-
-사용자 피드백 수집 기능 (간단 설문/문의 폼)
-
-5. 성공 지표 (MVP 검증 기준)
-정량적 지표
-
-등록 차량 수: 런칭 후 30일 내 30대 이상
-
-예약 전환율: 차량 상세 페이지 조회 대비 예약 요청 10% 이상
-
-예약 완료율: 예약 요청 대비 실제 이용 완료 X% (추후 목표 설정)
-
-액티브 사용자 수
-
-차주 활성 사용자 수
-
-이용자 활성 사용자 수
-
-정성적 지표
-
-초기 사용자(차주 + 이용자)의 피드백 수집
-
-불안 요소: 보험, 사고, 키 전달 등
-
-편의성: 검색/예약 플로우 난이도
-
-신뢰도 관련 니즈 파악
-
-리뷰/평점, 실명 인증, 면허 인증 요구 여부
-
-서비스에 대한 전반적 만족도 (간단한 NPS 설문, 목표 4.0 이상)
-
-6. 제약사항 및 주의사항
-
-앱 미구현
-
-초기에는 전용 모바일 앱 없이 반응형 웹만 제공
-
-결제/정산
-
-v1.0에서는 플랫폼 내 결제/정산 자동화 미구현
-
-정산은 운영팀이 외부에서 수동 처리
-
-리뷰/평가 기능 미포함
-
-사용자 수가 어느 정도 쌓인 뒤 v2에서 도입
-
-실시간 위치(GPS) 미지원
-
-비용/규제/기술 복잡도로 인해 초기에는 도입하지 않음
-
-키박스/스마트키 등 하드웨어 미도입
-
-하드웨어 비용과 운영 복잡성으로 인해 나중 단계에서 검토
-
-규제/법률
-
-서비스 성격은 P2P 중개 플랫폼으로 설정
-
-정식 런칭 전, 법률 자문을 통한 추가 보완 필요
-
-7. 개발 시작하기 가이드
-
-레포 정리 및 기본 런타임 에러 해결
-
-Next.js + Clerk + Supabase 연동 상태 점검
-
-useUser 등 인증 훅 관련 런타임 에러 해결
-
-Supabase 스키마 정의 및 적용
-
-users, vehicles, bookings 테이블 생성
-
-Storage 버킷 생성 및 정책 설정
-
-기본 인증/레이아웃 완성
-
-로그인/로그아웃/프로필 메뉴
-
-기본 레이아웃(Navbar, Footer) 확정
-
-핵심 플로우부터 구현
-
-우선순위:
-
-차량 등록
-
-검색/상세/예약 신청
-
-예약 승인/거절
-
-코드 스타일
-
-TypeScript 필수
-
-Server Actions 중심 구조
-
-에러 핸들링(try/catch + 사용자용 에러 메시지) 명확히 처리
-
-MVP 기준 유지
-
-“완벽한 서비스”가 아니라
-
-“실제 사용 가능한 최소 기능”에 집중
-
-v2(결제/보험/리뷰 등)는 Post-Launch Plan에 따라 단계적으로 진행
+공항 확장 (김포/부산 등)
