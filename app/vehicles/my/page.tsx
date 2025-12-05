@@ -20,27 +20,36 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { VehicleCard } from "@/components/vehicle-card";
-import { getMyVehicles, deleteVehicle, toggleVehicleStatus } from "@/actions/vehicle-actions";
+import { getMyVehiclesWithBookingSummary, deleteVehicle, toggleVehicleStatus } from "@/actions/vehicle-actions";
 import type { Vehicle } from "@/types/vehicle";
 
 export const dynamic = "force-dynamic";
+
+// 예약 현황 포함 차량 타입
+interface VehicleWithSummary extends Vehicle {
+  bookingSummary: {
+    pending: number;
+    approved: number;
+    completed: number;
+  };
+}
 
 export default function MyVehiclesPage() {
   const router = useRouter();
   const { isLoaded, isSignedIn } = useUser();
   
-  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [vehicles, setVehicles] = useState<VehicleWithSummary[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 차량 목록 조회
+  // 차량 목록 조회 (예약 현황 포함)
   const fetchVehicles = useCallback(async () => {
     console.group("[MyVehiclesPage] 차량 목록 조회");
     setIsLoading(true);
     setError(null);
     
     try {
-      const result = await getMyVehicles();
+      const result = await getMyVehiclesWithBookingSummary();
       
       if (result.success && result.data) {
         console.log("조회 성공:", result.data.length, "건");
@@ -185,6 +194,7 @@ export default function MyVehiclesPage() {
               key={vehicle.id}
               vehicle={vehicle}
               showActions
+              bookingSummary={vehicle.bookingSummary}
               onEdit={handleEdit}
               onDelete={handleDelete}
               onToggleStatus={handleToggleStatus}

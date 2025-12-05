@@ -367,6 +367,114 @@ export async function getVehicleById(vehicleId: string): Promise<ActionResult<Ve
 }
 
 /**
+ * 차량별 예약 현황 조회
+ */
+export async function getVehicleBookingSummary(
+  vehicleId: string
+): Promise<ActionResult<{ pending: number; approved: number; completed: number }>> {
+  try {
+    const supabase = await createClerkSupabaseClient();
+    
+    const { data, error } = await supabase
+      .from("bookings")
+      .select("status")
+      .eq("vehicle_id", vehicleId);
+    
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    
+    const summary = {
+      pending: data?.filter((b) => b.status === "pending").length || 0,
+      approved: data?.filter((b) => b.status === "approved").length || 0,
+      completed: data?.filter((b) => b.status === "completed").length || 0,
+    };
+    
+    return { success: true, data: summary };
+  } catch (err) {
+    return { 
+      success: false, 
+      error: err instanceof Error ? err.message : "알 수 없는 오류" 
+    };
+  }
+}
+
+/**
+ * 내 차량들의 예약 현황 일괄 조회
+ */
+export async function getMyVehiclesWithBookingSummary(): Promise<
+  ActionResult<(Vehicle & { bookingSummary: { pending: number; approved: number; completed: number } })[]>
+> {
+  console.group("[getMyVehiclesWithBookingSummary] 내 차량 + 예약 현황 조회");
+  
+  try {
+    const { userId } = await auth();
+    
+    if (!userId) {
+      console.groupEnd();
+      return { success: false, error: "로그인이 필요합니다." };
+    }
+    
+    const supabase = await createClerkSupabaseClient();
+    
+    // 내 차량 조회
+    const { data: vehicles, error: vehicleError } = await supabase
+      .from("vehicles")
+      .select("*")
+      .eq("owner_id", userId)
+      .order("created_at", { ascending: false });
+    
+    if (vehicleError) {
+      console.error("차량 조회 실패:", vehicleError);
+      console.groupEnd();
+      return { success: false, error: vehicleError.message };
+    }
+    
+    if (!vehicles || vehicles.length === 0) {
+      console.groupEnd();
+      return { success: true, data: [] };
+    }
+    
+    // 각 차량의 예약 현황 조회
+    const vehicleIds = vehicles.map((v) => v.id);
+    const { data: bookings, error: bookingError } = await supabase
+      .from("bookings")
+      .select("vehicle_id, status")
+      .in("vehicle_id", vehicleIds);
+    
+    if (bookingError) {
+      console.error("예약 조회 실패:", bookingError);
+      // 예약 조회 실패해도 차량 데이터는 반환
+    }
+    
+    // 차량별 예약 현황 매핑
+    const vehiclesWithSummary = vehicles.map((vehicle) => {
+      const vehicleBookings = bookings?.filter((b) => b.vehicle_id === vehicle.id) || [];
+      return {
+        ...vehicle,
+        bookingSummary: {
+          pending: vehicleBookings.filter((b) => b.status === "pending").length,
+          approved: vehicleBookings.filter((b) => b.status === "approved").length,
+          completed: vehicleBookings.filter((b) => b.status === "completed").length,
+        },
+      };
+    });
+    
+    console.log("조회 성공:", vehiclesWithSummary.length, "대");
+    console.groupEnd();
+    
+    return { success: true, data: vehiclesWithSummary as (Vehicle & { bookingSummary: { pending: number; approved: number; completed: number } })[] };
+  } catch (err) {
+    console.error("예외 발생:", err);
+    console.groupEnd();
+    return { 
+      success: false, 
+      error: err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다." 
+    };
+  }
+}
+
+/**
  * 차량 검색
  */
 export async function searchVehicles(

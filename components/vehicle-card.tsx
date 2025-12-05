@@ -17,9 +17,17 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { Vehicle } from "@/types/vehicle";
 
+// 예약 현황 summary 타입
+interface BookingSummary {
+  pending: number;
+  approved: number;
+  completed: number;
+}
+
 interface VehicleCardProps {
   vehicle: Vehicle;
   showActions?: boolean;
+  bookingSummary?: BookingSummary;
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
   onToggleStatus?: (id: string, status: "active" | "unavailable") => void;
@@ -28,6 +36,7 @@ interface VehicleCardProps {
 export function VehicleCard({
   vehicle,
   showActions = false,
+  bookingSummary,
   onEdit,
   onDelete,
   onToggleStatus,
@@ -100,6 +109,35 @@ export function VehicleCard({
               {format(new Date(vehicle.available_until), "M/d", { locale: ko })}
             </span>
           </div>
+
+          {/* 예약 현황 (showActions 모드에서만 표시) */}
+          {showActions && bookingSummary && (
+            <div className="mt-3 pt-3 border-t">
+              <p className="text-xs text-gray-500 mb-2">예약 현황</p>
+              <div className="flex gap-3 text-xs">
+                {bookingSummary.pending > 0 && (
+                  <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">
+                    대기 {bookingSummary.pending}
+                  </span>
+                )}
+                {bookingSummary.approved > 0 && (
+                  <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                    승인 {bookingSummary.approved}
+                  </span>
+                )}
+                {bookingSummary.completed > 0 && (
+                  <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                    완료 {bookingSummary.completed}
+                  </span>
+                )}
+                {bookingSummary.pending === 0 && 
+                 bookingSummary.approved === 0 && 
+                 bookingSummary.completed === 0 && (
+                  <span className="text-gray-400">예약 없음</span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </CardContent>
 

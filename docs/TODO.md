@@ -81,7 +81,7 @@
 - [x] 차량 수정 페이지 연결 (링크만)
 - [x] 차량 삭제 기능
 - [x] 차량 활성/비활성 toggle
-- [ ] 해당 차량 예약 현황 summary 표시
+- [x] 해당 차량 예약 현황 summary 표시
 
 ---
 
@@ -110,9 +110,9 @@
 - [x] 예약 신청 버튼
 
 **예약 상태에 따라 UI 다르게 표시**
-- [ ] pending → "승인 대기중"
-- [ ] approved → 결제 버튼 활성화
-- [ ] paid → "결제 완료 / 예약 내역 보기"
+- [x] pending → "승인 대기중"
+- [x] approved → 결제 버튼 활성화
+- [x] paid → "결제 완료 / 예약 내역 보기"
 
 ### 3-4. Server Action: createBooking
 - [x] 날짜 중복 체크
@@ -126,10 +126,10 @@
 ## PHASE 4 — 예약 관리 기능
 
 ### 4-1. 차주용 예약 관리 (/bookings/received)
-- [ ] 예약 요청 목록
-- [ ] 예약 상세 모달 또는 상세 페이지
-- [ ] 승인 버튼
-- [ ] 거절 버튼
+- [x] 예약 요청 목록
+- [x] 예약 상세 모달 또는 상세 페이지
+- [x] 승인 버튼
+- [x] 거절 버튼
 
 **approveBooking**
 - [x] 상태 pending → approved (Server Action 완료)
@@ -139,9 +139,9 @@
 - [x] 상태 rejected (Server Action 완료)
 
 ### 4-2. 이용자 예약 관리 (/bookings/my)
-- [ ] 내가 신청한 예약 목록
-- [ ] 상태 배지 표시
-- [ ] 예약 취소 기능 (cancelBooking - Server Action 완료)
+- [x] 내가 신청한 예약 목록
+- [x] 상태 배지 표시
+- [x] 예약 취소 기능 (cancelBooking)
 
 ---
 
@@ -214,8 +214,8 @@
 - [x] DateRangePicker
 - [x] ImageUploader
 - [x] VehicleCard
-- [ ] BookingCard
-- [ ] StatusBadge
+- [x] BookingCard
+- [x] StatusBadge
 - [x] Navbar
 - [ ] Footer
 

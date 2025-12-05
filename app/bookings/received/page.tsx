@@ -1,371 +1,264 @@
 /**
  * @file app/bookings/received/page.tsx
- * @description 받은 예약 관리 페이지 (차주)
+ * @description 받은 예약 관리 페이지 (차주용)
  * 
- * 차주가 받은 예약 요청을 보고 승인/거절하는 페이지입니다.
+ * 차주가 자신의 차량에 들어온 예약 요청을 관리할 수 있는 페이지입니다.
  * 
  * 주요 기능:
- * 1. 내 차량에 대한 예약 요청 조회
- * 2. 예약 승인/거절
- * 3. 예약 상태 표시
- * 
- * @dependencies
- * - @clerk/nextjs: 사용자 인증
- * - actions/bookings: 예약 조회 및 승인/거절
+ * 1. 받은 예약 요청 목록
+ * 2. 상태별 필터링
+ * 3. 예약 승인/거절
  */
 
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUser } from '@clerk/nextjs';
-import { getReceivedBookings, approveBooking, rejectBooking } from '@/actions/bookings';
-import { Button } from '@/components/ui/button';
-import { Calendar, Car, DollarSign, Loader2, MapPin, Check, X, User } from 'lucide-react';
-import Link from 'next/link';
-import Image from 'next/image';
-import type { BookingWithDetails } from '@/types/database';
+import { useEffect, useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
+import { Inbox, RefreshCw, Filter, AlertCircle } from "lucide-react";
 
-// Clerk Provider 사용으로 인한 동적 렌더링 강제
-export const dynamic = 'force-dynamic';
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { BookingCard } from "@/components/booking-card";
+import { getReceivedBookings, approveBooking, rejectBooking } from "@/actions/booking-actions";
+import type { Booking, Vehicle } from "@/types/vehicle";
 
-// 예약 상태 배지 컴포넌트
-function StatusBadge({ status }: { status: string }) {
-  const statusConfig = {
-    pending: { label: '대기 중', className: 'bg-yellow-100 text-yellow-800' },
-    approved: { label: '승인됨', className: 'bg-green-100 text-green-800' },
-    rejected: { label: '거절됨', className: 'bg-red-100 text-red-800' },
-    completed: { label: '완료', className: 'bg-blue-100 text-blue-800' },
-    cancelled: { label: '취소됨', className: 'bg-gray-100 text-gray-800' },
-  };
+export const dynamic = "force-dynamic";
 
-  const config = statusConfig[status as keyof typeof statusConfig] || {
-    label: status,
-    className: 'bg-gray-100 text-gray-800',
-  };
-
-  return (
-    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${config.className}`}>
-      {config.label}
-    </span>
-  );
+// 차량 정보가 포함된 예약 타입
+interface BookingWithVehicle extends Booking {
+  vehicles?: Vehicle;
 }
 
 export default function ReceivedBookingsPage() {
   const router = useRouter();
-  const { user, isLoaded } = useUser();
-  const [bookings, setBookings] = useState<BookingWithDetails[]>([]);
+  const { isLoaded, isSignedIn } = useUser();
+  
+  const [bookings, setBookings] = useState<BookingWithVehicle[]>([]);
+  const [filteredBookings, setFilteredBookings] = useState<BookingWithVehicle[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isActionLoading, setIsActionLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [processingId, setProcessingId] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>("pending"); // 기본값: 대기중
 
-  console.group('📨 ReceivedBookingsPage Render');
-  console.log('User loaded:', isLoaded);
-  console.log('User ID:', user?.id);
-  console.log('Bookings count:', bookings.length);
-  console.groupEnd();
-
-  // 예약 목록 불러오기
-  useEffect(() => {
-    // 로그인 체크
-    if (isLoaded && !user) {
-      router.push('/sign-in');
-      return;
-    }
-    const fetchBookings = async () => {
-      console.group('🔄 Fetching received bookings...');
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const result = await getReceivedBookings();
-
-        if (result.success && result.data) {
-          console.log('✅ Bookings fetched:', result.data.length);
-          setBookings(result.data);
-        } else {
-          console.error('❌ Failed to fetch bookings:', result.error);
-          setError(result.error || '예약을 불러오는데 실패했습니다.');
-        }
-      } catch (err) {
-        console.error('❌ Error fetching bookings:', err);
-        setError('예약을 불러오는 중 오류가 발생했습니다.');
-      } finally {
-        setIsLoading(false);
-        console.groupEnd();
+  // 예약 목록 조회
+  const fetchBookings = useCallback(async () => {
+    console.group("[ReceivedBookingsPage] 받은 예약 조회");
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const result = await getReceivedBookings();
+      
+      if (result.success && result.data) {
+        console.log("조회 성공:", result.data.length, "건");
+        setBookings(result.data as BookingWithVehicle[]);
+      } else {
+        console.error("조회 실패:", result.error);
+        setError(result.error || "예약 목록을 불러오는데 실패했습니다.");
       }
-    };
+    } catch (err) {
+      console.error("예외 발생:", err);
+      setError("오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
+      console.groupEnd();
+    }
+  }, []);
 
-    if (user) {
+  // 필터링 적용
+  useEffect(() => {
+    if (statusFilter === "all") {
+      setFilteredBookings(bookings);
+    } else {
+      setFilteredBookings(bookings.filter((b) => b.status === statusFilter));
+    }
+  }, [bookings, statusFilter]);
+
+  // 페이지 로드 시 조회
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
       fetchBookings();
     }
-  }, [user]);
+  }, [isLoaded, isSignedIn, fetchBookings]);
 
-  // 예약 승인 핸들러
-  const handleApprove = async (bookingId: string, vehicleModel: string) => {
-    if (!confirm(`"${vehicleModel}" 예약을 승인하시겠습니까?`)) {
+  // 예약 승인
+  const handleApprove = async (bookingId: string) => {
+    if (!confirm("이 예약을 승인하시겠습니까?\n승인하면 해당 기간의 다른 대기중인 예약은 자동으로 거절됩니다.")) {
       return;
     }
-
-    console.group(`✅ Approving booking: ${bookingId}`);
-    setProcessingId(bookingId);
-
-    try {
-      const result = await approveBooking(bookingId);
-
-      if (result.success) {
-        console.log('✅ Booking approved');
-        alert(result.message || '예약이 승인되었습니다.');
-        // 목록에서 상태 업데이트
-        setBookings((prev) =>
-          prev.map((b) => (b.id === bookingId ? { ...b, status: 'approved' } : b))
-        );
-      } else {
-        console.error('❌ Approve failed:', result.error);
-        alert(result.error || '예약 승인에 실패했습니다.');
-      }
-    } catch (err) {
-      console.error('❌ Error approving booking:', err);
-      alert('예약 승인 중 오류가 발생했습니다.');
-    } finally {
-      setProcessingId(null);
-      console.groupEnd();
+    
+    console.log("[ReceivedBookingsPage] 예약 승인:", bookingId);
+    setIsActionLoading(true);
+    
+    const result = await approveBooking(bookingId);
+    
+    if (result.success) {
+      // 목록 새로고침 (다른 예약들도 상태가 변경될 수 있으므로)
+      await fetchBookings();
+    } else {
+      alert(result.error || "승인에 실패했습니다.");
     }
+    
+    setIsActionLoading(false);
   };
 
-  // 예약 거절 핸들러
-  const handleReject = async (bookingId: string, vehicleModel: string) => {
-    if (!confirm(`"${vehicleModel}" 예약을 거절하시겠습니까?`)) {
-      return;
+  // 예약 거절
+  const handleReject = async (bookingId: string) => {
+    if (!confirm("이 예약을 거절하시겠습니까?")) return;
+    
+    console.log("[ReceivedBookingsPage] 예약 거절:", bookingId);
+    setIsActionLoading(true);
+    
+    const result = await rejectBooking(bookingId);
+    
+    if (result.success) {
+      // 목록 업데이트
+      setBookings((prev) =>
+        prev.map((b) => (b.id === bookingId ? { ...b, status: "rejected" as const } : b))
+      );
+    } else {
+      alert(result.error || "거절에 실패했습니다.");
     }
-
-    console.group(`❌ Rejecting booking: ${bookingId}`);
-    setProcessingId(bookingId);
-
-    try {
-      const result = await rejectBooking(bookingId);
-
-      if (result.success) {
-        console.log('✅ Booking rejected');
-        alert(result.message || '예약이 거절되었습니다.');
-        // 목록에서 상태 업데이트
-        setBookings((prev) =>
-          prev.map((b) => (b.id === bookingId ? { ...b, status: 'rejected' } : b))
-        );
-      } else {
-        console.error('❌ Reject failed:', result.error);
-        alert(result.error || '예약 거절에 실패했습니다.');
-      }
-    } catch (err) {
-      console.error('❌ Error rejecting booking:', err);
-      alert('예약 거절 중 오류가 발생했습니다.');
-    } finally {
-      setProcessingId(null);
-      console.groupEnd();
-    }
+    
+    setIsActionLoading(false);
   };
 
-  // 날짜 포맷팅
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  // 대기 중인 예약 수
-  const pendingCount = bookings.filter((b) => b.status === 'pending').length;
-
-  if (!isLoaded || !user) {
+  // 로그인 체크
+  if (!isLoaded) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin" />
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
+  if (!isSignedIn) {
+    return (
+      <div className="max-w-2xl mx-auto p-6 text-center">
+        <h1 className="text-2xl font-bold mb-4">로그인이 필요합니다</h1>
+        <p className="text-gray-600 mb-4">예약을 관리하려면 먼저 로그인해주세요.</p>
+        <Button onClick={() => router.push("/sign-in")}>로그인</Button>
+      </div>
+    );
+  }
+
+  // 상태별 예약 개수
+  const statusCounts = {
+    all: bookings.length,
+    pending: bookings.filter((b) => b.status === "pending").length,
+    approved: bookings.filter((b) => b.status === "approved").length,
+    completed: bookings.filter((b) => b.status === "completed").length,
+    cancelled: bookings.filter((b) => b.status === "cancelled").length,
+    rejected: bookings.filter((b) => b.status === "rejected").length,
+  };
+
+  // 대기 중인 예약 알림
+  const pendingCount = statusCounts.pending;
+
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="max-w-4xl mx-auto p-6">
       {/* 헤더 */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">받은 예약</h1>
-        <p className="text-gray-600">
-          내 차량에 대한 예약 요청을 확인하고 승인/거절하세요.
-        </p>
-        {pendingCount > 0 && (
-          <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <span className="text-yellow-800 font-semibold">
-              {pendingCount}개의 대기 중인 예약이 있습니다
-            </span>
-          </div>
-        )}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">받은 예약</h1>
+          <p className="text-gray-600 mt-1">
+            내 차량에 대한 예약 요청을 관리하세요.
+          </p>
+        </div>
+        
+        <Button variant="outline" onClick={fetchBookings} disabled={isLoading}>
+          <RefreshCw className={`w-4 h-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
+          새로고침
+        </Button>
       </div>
 
-      {/* 에러 메시지 */}
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-800">{error}</p>
+      {/* 대기 중 알림 */}
+      {pendingCount > 0 && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-yellow-600" />
+          <div>
+            <p className="font-medium text-yellow-800">
+              {pendingCount}건의 예약 요청이 승인을 기다리고 있습니다
+            </p>
+            <p className="text-sm text-yellow-600">
+              빠른 응답은 고객 만족도를 높입니다!
+            </p>
+          </div>
         </div>
       )}
 
+      {/* 필터 */}
+      <div className="flex items-center gap-4 mb-6">
+        <Filter className="w-5 h-5 text-gray-500" />
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">전체 ({statusCounts.all})</SelectItem>
+            <SelectItem value="pending">승인 대기 ({statusCounts.pending})</SelectItem>
+            <SelectItem value="approved">승인됨 ({statusCounts.approved})</SelectItem>
+            <SelectItem value="completed">완료 ({statusCounts.completed})</SelectItem>
+            <SelectItem value="cancelled">취소됨 ({statusCounts.cancelled})</SelectItem>
+            <SelectItem value="rejected">거절됨 ({statusCounts.rejected})</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* 로딩 상태 */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin" />
+      {isLoading && (
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         </div>
-      ) : bookings.length === 0 ? (
-        /* 예약 없음 */
-        <div className="text-center py-12">
-          <Car className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-xl font-semibold mb-2">받은 예약이 없습니다</h3>
-          <p className="text-gray-600 mb-6">
-            차량을 등록하고 예약을 받아보세요!
+      )}
+
+      {/* 에러 상태 */}
+      {error && !isLoading && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          {error}
+        </div>
+      )}
+
+      {/* 빈 상태 */}
+      {!isLoading && !error && filteredBookings.length === 0 && (
+        <div className="text-center py-20">
+          <Inbox className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+          <h2 className="text-xl font-semibold text-gray-700 mb-2">
+            {statusFilter === "all" 
+              ? "받은 예약이 없습니다" 
+              : statusFilter === "pending"
+              ? "대기 중인 예약이 없습니다"
+              : "해당 상태의 예약이 없습니다"}
+          </h2>
+          <p className="text-gray-500 mb-6">
+            차량을 등록하면 예약 요청을 받을 수 있습니다.
           </p>
-          <Link href="/vehicles/new">
-            <Button>차량 등록하기</Button>
-          </Link>
+          <Button onClick={() => router.push("/vehicles/my")}>내 차량 관리</Button>
         </div>
-      ) : (
-        /* 예약 목록 */
+      )}
+
+      {/* 예약 목록 */}
+      {!isLoading && !error && filteredBookings.length > 0 && (
         <div className="space-y-4">
-          {bookings.map((booking) => (
-            <div
+          {filteredBookings.map((booking) => (
+            <BookingCard
               key={booking.id}
-              className="bg-white rounded-lg border p-6 hover:shadow-md transition-shadow"
-            >
-              <div className="flex flex-col md:flex-row gap-6">
-                {/* 차량 이미지 */}
-                <div className="flex-shrink-0">
-                  <div className="relative w-full md:w-48 h-36 bg-gray-200 rounded-lg overflow-hidden">
-                    {booking.vehicle.images && booking.vehicle.images.length > 0 ? (
-                      <Image
-                        src={booking.vehicle.images[0]}
-                        alt={booking.vehicle.model}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full">
-                        <Car className="w-12 h-12 text-gray-400" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* 예약 정보 */}
-                <div className="flex-1">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <Link 
-                        href={`/vehicles/${booking.vehicle_id}`}
-                        className="text-xl font-semibold hover:text-blue-600"
-                      >
-                        {booking.vehicle.model}
-                      </Link>
-                      <p className="text-gray-600 text-sm">
-                        {booking.vehicle.year}년 · {booking.vehicle.plate_number}
-                      </p>
-                    </div>
-                    <StatusBadge status={booking.status} />
-                  </div>
-
-                  {/* 예약자 정보 */}
-                  <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-2 text-sm">
-                      <User className="w-4 h-4 text-gray-600" />
-                      <span className="font-semibold">예약자:</span>
-                      <span>{booking.renter.name}</span>
-                      {booking.renter.phone && (
-                        <span className="text-gray-600">· {booking.renter.phone}</span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center text-gray-600">
-                        <Calendar className="w-4 h-4 mr-2" />
-                        <div>
-                          <div>시작: {formatDate(booking.start_date)}</div>
-                          <div>종료: {formatDate(booking.end_date)}</div>
-                        </div>
-                      </div>
-                      {booking.pickup_location && (
-                        <div className="flex items-center text-gray-600">
-                          <MapPin className="w-4 h-4 mr-2" />
-                          픽업: {booking.pickup_location}
-                        </div>
-                      )}
-                      {booking.return_location && (
-                        <div className="flex items-center text-gray-600">
-                          <MapPin className="w-4 h-4 mr-2" />
-                          반납: {booking.return_location}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center text-gray-600">
-                        <DollarSign className="w-4 h-4 mr-2" />
-                        총 금액: <span className="font-semibold ml-1">{booking.total_price.toLocaleString()}원</span>
-                      </div>
-                      <div className="text-gray-600">
-                        신청일: {formatDate(booking.created_at)}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* 액션 버튼 */}
-                  {booking.status === 'pending' && (
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() => handleApprove(booking.id, booking.vehicle.model)}
-                        disabled={processingId === booking.id}
-                      >
-                        {processingId === booking.id ? (
-                          <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-                        ) : (
-                          <Check className="w-4 h-4 mr-1" />
-                        )}
-                        승인
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleReject(booking.id, booking.vehicle.model)}
-                        disabled={processingId === booking.id}
-                      >
-                        <X className="w-4 h-4 mr-1" />
-                        거절
-                      </Button>
-                    </div>
-                  )}
-                  {booking.status === 'approved' && (
-                    <div className="text-sm text-green-600">
-                      ✓ 예약을 승인했습니다. 예약자에게 연락하세요.
-                    </div>
-                  )}
-                  {booking.status === 'rejected' && (
-                    <div className="text-sm text-red-600">
-                      예약을 거절했습니다.
-                    </div>
-                  )}
-                  {booking.status === 'cancelled' && (
-                    <div className="text-sm text-gray-600">
-                      예약자가 예약을 취소했습니다.
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+              booking={booking}
+              mode="owner"
+              onApprove={handleApprove}
+              onReject={handleReject}
+              isLoading={isActionLoading}
+            />
           ))}
         </div>
       )}
     </div>
   );
 }
-
