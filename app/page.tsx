@@ -2,22 +2,21 @@
  * @file app/page.tsx
  * @description 트립카셰어 홈 페이지
  * 
- * Airport Parking 디자인 컨셉 적용:
- * - 다크 네이비 배경 (#0a1628)
- * - 라임/네온 그린 포인트 색상 (#c4ff00)
- * - 모던하고 세련된 UI
- * 
- * @see https://dribbble.com/shots/23554798-Airport-Parking-Branding-Website
+ * 공항 주차/차량 공유 서비스 스타일의 모던한 랜딩 페이지
  */
 
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Car, DollarSign, Shield, Clock, Search, Plane, MapPin, Calendar, ChevronRight } from 'lucide-react';
+import { 
+  Car, Search, MapPin, Calendar, Users, 
+  ChevronRight, Shield, Clock, CreditCard 
+} from 'lucide-react';
 
 export default function HomePage() {
   const router = useRouter();
@@ -31,10 +30,6 @@ export default function HomePage() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.group('🔍 Search Vehicles');
-    console.log('Search data:', searchData);
-
-    // 검색 파라미터를 URL에 추가
     const params = new URLSearchParams({
       from: searchData.available_from,
       to: searchData.available_until,
@@ -42,168 +37,202 @@ export default function HomePage() {
     });
 
     router.push(`/vehicles?${params.toString()}`);
-    console.groupEnd();
   };
 
   return (
-    <div className="min-h-screen bg-[#0a1628]">
-      {/* 히어로 섹션 */}
-      <section className="relative overflow-hidden min-h-[90vh] flex items-center">
-        {/* 배경 그라데이션 및 패턴 */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a1628] via-[#0d1d31] to-[#0a1628]" />
+    <div className="min-h-screen">
+      {/* 히어로 섹션 - 공항 스타일 */}
+      <section className="relative overflow-hidden">
+        {/* 배경 이미지 & 오버레이 */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 58, 138, 0.8) 50%, rgba(59, 130, 246, 0.7) 100%), 
+              url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-4.0.3&auto=format&fit=crop&w=2074&q=80')`,
+          }}
+        />
         
-        {/* 장식적 요소들 */}
-        <div className="absolute top-20 right-10 w-72 h-72 bg-[#c4ff00]/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-10 w-96 h-96 bg-[#c4ff00]/5 rounded-full blur-3xl" />
+        {/* 사선 장식 */}
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-white transform -skew-y-2 origin-bottom-left translate-y-12" />
         
-        {/* 비행기 아이콘 장식 */}
-        <div className="absolute top-32 right-1/4 opacity-20">
-          <Plane className="w-32 h-32 text-[#c4ff00] rotate-45" />
-        </div>
-        <div className="absolute bottom-40 left-1/4 opacity-10">
-          <Plane className="w-24 h-24 text-white -rotate-12" />
-        </div>
-        
-        <div className="container max-w-7xl mx-auto px-4 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* 왼쪽: 텍스트 */}
-            <div className="text-left">
-              <div className="inline-flex items-center gap-2 bg-[#c4ff00]/10 border border-[#c4ff00]/30 rounded-full px-4 py-2 mb-6">
-                <span className="w-2 h-2 bg-[#c4ff00] rounded-full animate-pulse" />
-                <span className="text-[#c4ff00] text-sm font-medium">제주 공항 P2P 차량 공유</span>
-              </div>
-              
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-                공항에서 만나는
+        <div className="relative container max-w-6xl mx-auto px-4 py-20 md:py-32">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            {/* 텍스트 영역 */}
+            <div className="text-white">
+              <p className="text-blue-300 font-medium mb-4 tracking-wide">
+                제주 공항 P2P 차량 공유
+              </p>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                필요한 차량을
                 <br />
-                <span className="text-[#c4ff00]">스마트한</span>
-                <br />
-                차량 공유
+                <span className="text-blue-400">바로 찾으세요!</span>
               </h1>
-              
-              <p className="text-lg md:text-xl text-gray-400 mb-8 max-w-lg">
-                제주 여행, 더 이상 렌트카 걱정하지 마세요.
-                현지 차주와 직접 연결되는 P2P 차량 공유 플랫폼
+              <p className="text-lg md:text-xl text-gray-300 mb-8 leading-relaxed">
+                제주 공항에서 현지 차주와 직접 연결되는
+                <br className="hidden md:block" />
+                편리하고 합리적인 차량 공유 서비스
               </p>
               
+              {/* 빠른 링크 */}
               <div className="flex flex-wrap gap-4">
-                <Button 
-                  size="lg" 
-                  className="bg-[#c4ff00] text-[#0a1628] hover:bg-[#b3e600] font-semibold rounded-full px-8"
-                  onClick={() => router.push('/vehicles')}
+                <Link 
+                  href="/guide/renter"
+                  className="flex items-center gap-2 text-blue-300 hover:text-white transition-colors"
                 >
-                  차량 둘러보기
-                  <ChevronRight className="w-5 h-5 ml-1" />
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline"
-                  className="border-white/30 text-white hover:bg-white/10 rounded-full px-8"
-                  onClick={() => router.push('/guide/renter')}
+                  이용자 가이드 <ChevronRight className="w-4 h-4" />
+                </Link>
+                <Link 
+                  href="/guide/owner"
+                  className="flex items-center gap-2 text-blue-300 hover:text-white transition-colors"
                 >
-                  이용 가이드
-                </Button>
-              </div>
-              
-              {/* 통계 */}
-              <div className="flex gap-8 mt-12 pt-8 border-t border-white/10">
-                <div>
-                  <p className="text-3xl font-bold text-[#c4ff00]">30+</p>
-                  <p className="text-gray-500 text-sm">등록된 차량</p>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-[#c4ff00]">24h</p>
-                  <p className="text-gray-500 text-sm">평균 승인 시간</p>
-                </div>
-                <div>
-                  <p className="text-3xl font-bold text-[#c4ff00]">30%</p>
-                  <p className="text-gray-500 text-sm">비용 절감</p>
-                </div>
+                  차주 가이드 <ChevronRight className="w-4 h-4" />
+                </Link>
               </div>
             </div>
 
-            {/* 오른쪽: 검색 폼 */}
-            <div className="lg:pl-8">
-              <div className="bg-[#111c2e] border border-white/10 rounded-3xl p-8 shadow-2xl">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 bg-[#c4ff00] rounded-xl flex items-center justify-center">
-                    <Search className="w-5 h-5 text-[#0a1628]" />
-                  </div>
-                  <h2 className="text-2xl font-bold text-white">차량 검색</h2>
+            {/* 검색 폼 카드 */}
+            <div className="bg-white rounded-2xl shadow-2xl p-6 md:p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <Search className="w-5 h-5 text-white" />
                 </div>
-                
-                <form onSubmit={handleSearch} className="space-y-5">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* 이용 시작일 */}
-                    <div className="space-y-2">
-                      <Label htmlFor="available_from" className="text-gray-400 text-sm flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        이용 시작일
-                      </Label>
-                      <Input
-                        id="available_from"
-                        type="datetime-local"
-                        value={searchData.available_from}
-                        onChange={(e) =>
-                          setSearchData({ ...searchData, available_from: e.target.value })
-                        }
-                        className="bg-[#0a1628] border-white/20 text-white rounded-xl h-12 focus:border-[#c4ff00] focus:ring-[#c4ff00]/20"
-                        required
-                      />
-                    </div>
-
-                    {/* 이용 종료일 */}
-                    <div className="space-y-2">
-                      <Label htmlFor="available_until" className="text-gray-400 text-sm flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        이용 종료일
-                      </Label>
-                      <Input
-                        id="available_until"
-                        type="datetime-local"
-                        value={searchData.available_until}
-                        onChange={(e) =>
-                          setSearchData({ ...searchData, available_until: e.target.value })
-                        }
-                        className="bg-[#0a1628] border-white/20 text-white rounded-xl h-12 focus:border-[#c4ff00] focus:ring-[#c4ff00]/20"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  {/* 공항 선택 */}
-                  <div className="space-y-2">
-                    <Label htmlFor="airport_location" className="text-gray-400 text-sm flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      픽업 공항
+                <h2 className="text-xl font-bold text-gray-900">차량 검색</h2>
+              </div>
+              
+              <form onSubmit={handleSearch} className="space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="available_from" className="text-gray-600 text-sm mb-1.5 block">
+                      <Calendar className="w-4 h-4 inline mr-1" />
+                      이용 시작
                     </Label>
-                    <div className="relative">
-                      <Input
-                        id="airport_location"
-                        type="text"
-                        value={searchData.airport_location}
-                        onChange={(e) =>
-                          setSearchData({ ...searchData, airport_location: e.target.value })
-                        }
-                        className="bg-[#0a1628] border-white/20 text-white rounded-xl h-12 pl-12 focus:border-[#c4ff00] focus:ring-[#c4ff00]/20"
-                        placeholder="제주 국제공항"
-                        required
-                      />
-                      <Plane className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#c4ff00]" />
-                    </div>
-                    <p className="text-xs text-gray-500">
-                      현재는 제주 국제공항만 지원합니다
-                    </p>
+                    <Input
+                      id="available_from"
+                      type="datetime-local"
+                      value={searchData.available_from}
+                      onChange={(e) =>
+                        setSearchData({ ...searchData, available_from: e.target.value })
+                      }
+                      className="h-12"
+                      required
+                    />
                   </div>
+                  <div>
+                    <Label htmlFor="available_until" className="text-gray-600 text-sm mb-1.5 block">
+                      <Calendar className="w-4 h-4 inline mr-1" />
+                      이용 종료
+                    </Label>
+                    <Input
+                      id="available_until"
+                      type="datetime-local"
+                      value={searchData.available_until}
+                      onChange={(e) =>
+                        setSearchData({ ...searchData, available_until: e.target.value })
+                      }
+                      className="h-12"
+                      required
+                    />
+                  </div>
+                </div>
 
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-[#c4ff00] text-[#0a1628] hover:bg-[#b3e600] font-semibold rounded-xl h-14 text-lg"
-                  >
-                    <Search className="w-5 h-5 mr-2" />
-                    차량 검색
-                  </Button>
-                </form>
+                <div>
+                  <Label htmlFor="airport_location" className="text-gray-600 text-sm mb-1.5 block">
+                    <MapPin className="w-4 h-4 inline mr-1" />
+                    픽업 공항
+                  </Label>
+                  <Input
+                    id="airport_location"
+                    type="text"
+                    value={searchData.airport_location}
+                    readOnly
+                    className="h-12 bg-gray-50"
+                  />
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full h-12 text-base bg-blue-600 hover:bg-blue-700"
+                >
+                  <Search className="w-5 h-5 mr-2" />
+                  차량 검색하기
+                </Button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 차량 타입별 가격 섹션 */}
+      <section className="py-16 md:py-24 bg-white">
+        <div className="container max-w-6xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <p className="text-blue-600 font-medium mb-2">합리적인 가격</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+              차량 타입별 평균 가격
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+            {/* 경차 */}
+            <div className="group relative">
+              <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-[2rem] p-8 text-white text-center transform transition-transform group-hover:scale-105 shadow-lg">
+                <p className="text-emerald-100 text-lg mb-1">경차</p>
+                <p className="text-sm text-emerald-200 mb-4">모닝, 스파크 등</p>
+                <div className="flex items-baseline justify-center">
+                  <span className="text-2xl align-top">₩</span>
+                  <span className="text-6xl font-bold">3</span>
+                  <span className="text-4xl font-bold">.5</span>
+                  <span className="text-xl ml-1">만원</span>
+                </div>
+                <p className="text-emerald-200 mt-2">1일 기준</p>
+                <Button 
+                  className="mt-6 bg-white text-emerald-600 hover:bg-emerald-50 rounded-full px-6"
+                  onClick={() => router.push('/vehicles?type=compact')}
+                >
+                  차량 보기 <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+
+            {/* 중형 */}
+            <div className="group relative">
+              <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-[2rem] p-8 text-white text-center transform transition-transform group-hover:scale-105 shadow-lg">
+                <p className="text-blue-100 text-lg mb-1">중형 세단</p>
+                <p className="text-sm text-blue-200 mb-4">아반떼, K3 등</p>
+                <div className="flex items-baseline justify-center">
+                  <span className="text-2xl align-top">₩</span>
+                  <span className="text-6xl font-bold">5</span>
+                  <span className="text-4xl font-bold">.0</span>
+                  <span className="text-xl ml-1">만원</span>
+                </div>
+                <p className="text-blue-200 mt-2">1일 기준</p>
+                <Button 
+                  className="mt-6 bg-white text-blue-600 hover:bg-blue-50 rounded-full px-6"
+                  onClick={() => router.push('/vehicles?type=sedan')}
+                >
+                  차량 보기 <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+
+            {/* SUV */}
+            <div className="group relative">
+              <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-[2rem] p-8 text-white text-center transform transition-transform group-hover:scale-105 shadow-lg">
+                <p className="text-violet-100 text-lg mb-1">SUV</p>
+                <p className="text-sm text-violet-200 mb-4">투싼, 스포티지 등</p>
+                <div className="flex items-baseline justify-center">
+                  <span className="text-2xl align-top">₩</span>
+                  <span className="text-6xl font-bold">7</span>
+                  <span className="text-4xl font-bold">.0</span>
+                  <span className="text-xl ml-1">만원</span>
+                </div>
+                <p className="text-violet-200 mt-2">1일 기준</p>
+                <Button 
+                  className="mt-6 bg-white text-violet-600 hover:bg-violet-50 rounded-full px-6"
+                  onClick={() => router.push('/vehicles?type=suv')}
+                >
+                  차량 보기 <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
               </div>
             </div>
           </div>
@@ -211,159 +240,186 @@ export default function HomePage() {
       </section>
 
       {/* 이용 방법 섹션 */}
-      <section className="py-24 bg-[#0d1d31]">
+      <section className="py-16 md:py-24 bg-gray-50">
         <div className="container max-w-6xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <span className="text-[#c4ff00] text-sm font-semibold tracking-wider uppercase">How it works</span>
-            <h2 className="text-4xl font-bold text-white mt-3">
-              간편한 이용 방법
+          <div className="text-center mb-12">
+            <p className="text-blue-600 font-medium mb-2">간편한 이용</p>
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+              3단계로 쉽게 이용하세요
             </h2>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* 단계 1 */}
-            <div className="relative group">
-              <div className="bg-[#111c2e] border border-white/10 rounded-2xl p-8 h-full hover:border-[#c4ff00]/50 transition-all duration-300">
-                <div className="w-14 h-14 bg-[#c4ff00] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <span className="text-2xl font-bold text-[#0a1628]">1</span>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3">차량 검색</h3>
-                <p className="text-gray-400">
-                  원하는 날짜와 공항을 선택하여 이용 가능한 차량을 검색하세요.
-                </p>
+            <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mb-6">
+                <Search className="w-7 h-7 text-blue-600" />
               </div>
-              {/* 연결선 */}
-              <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-[#c4ff00]/50 to-transparent" />
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                  1
+                </span>
+                <h3 className="text-xl font-bold text-gray-900">차량 검색</h3>
+              </div>
+              <p className="text-gray-600 leading-relaxed">
+                원하는 날짜와 공항을 선택하여 이용 가능한 차량을 검색하세요.
+              </p>
             </div>
 
             {/* 단계 2 */}
-            <div className="relative group">
-              <div className="bg-[#111c2e] border border-white/10 rounded-2xl p-8 h-full hover:border-[#c4ff00]/50 transition-all duration-300">
-                <div className="w-14 h-14 bg-[#c4ff00] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <span className="text-2xl font-bold text-[#0a1628]">2</span>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3">예약 & 결제</h3>
-                <p className="text-gray-400">
-                  마음에 드는 차량을 예약하고 안전하게 결제를 진행하세요.
-                </p>
+            <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6">
+                <Calendar className="w-7 h-7 text-emerald-600" />
               </div>
-              {/* 연결선 */}
-              <div className="hidden md:block absolute top-1/2 -right-4 w-8 h-0.5 bg-gradient-to-r from-[#c4ff00]/50 to-transparent" />
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                  2
+                </span>
+                <h3 className="text-xl font-bold text-gray-900">예약 & 결제</h3>
+              </div>
+              <p className="text-gray-600 leading-relaxed">
+                마음에 드는 차량을 선택하고 예약 후 안전하게 결제하세요.
+              </p>
             </div>
 
             {/* 단계 3 */}
-            <div className="group">
-              <div className="bg-[#111c2e] border border-white/10 rounded-2xl p-8 h-full hover:border-[#c4ff00]/50 transition-all duration-300">
-                <div className="w-14 h-14 bg-[#c4ff00] rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                  <span className="text-2xl font-bold text-[#0a1628]">3</span>
-                </div>
-                <h3 className="text-xl font-bold text-white mb-3">차량 픽업</h3>
-                <p className="text-gray-400">
-                  공항에서 차량을 인수하고 여행을 즐기세요.
-                </p>
+            <div className="bg-white rounded-2xl p-8 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-14 h-14 bg-violet-100 rounded-2xl flex items-center justify-center mb-6">
+                <Car className="w-7 h-7 text-violet-600" />
               </div>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-8 h-8 bg-violet-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                  3
+                </span>
+                <h3 className="text-xl font-bold text-gray-900">차량 이용</h3>
+              </div>
+              <p className="text-gray-600 leading-relaxed">
+                공항에서 차량을 인수하고 편안한 제주 여행을 즐기세요.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
       {/* 서비스 장점 섹션 */}
-      <section className="py-24 bg-[#0a1628]">
+      <section className="py-16 md:py-24 bg-white">
         <div className="container max-w-6xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <span className="text-[#c4ff00] text-sm font-semibold tracking-wider uppercase">Why Choose Us</span>
-            <h2 className="text-4xl font-bold text-white mt-3">
-              왜 트립카셰어인가요?
-            </h2>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* 장점 1 */}
-            <div className="bg-gradient-to-br from-[#111c2e] to-[#0d1d31] border border-white/10 rounded-2xl p-6 hover:border-[#c4ff00]/30 transition-all group">
-              <div className="w-12 h-12 bg-[#c4ff00]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#c4ff00]/20 transition-colors">
-                <DollarSign className="w-6 h-6 text-[#c4ff00]" />
-              </div>
-              <h3 className="text-lg font-bold text-white mb-2">합리적인 가격</h3>
-              <p className="text-gray-400 text-sm">
-                렌트카 대비 최대 30% 저렴한 가격으로 차량을 이용하세요.
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            {/* 왼쪽: 텍스트 */}
+            <div>
+              <p className="text-blue-600 font-medium mb-2">왜 트립카셰어?</p>
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+                더 스마트한 선택,
+                <br />
+                더 즐거운 여행
+              </h2>
+              <p className="text-gray-600 text-lg mb-8">
+                제주 여행의 시작과 끝을 함께하는 TripCarShare.
+                렌트카 대비 최대 30% 저렴한 가격과 편리한 공항 픽업으로
+                당신의 여행을 더욱 특별하게 만들어드립니다.
               </p>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <CreditCard className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">합리적 가격</h4>
+                    <p className="text-sm text-gray-500">최대 30% 절약</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Clock className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">편리한 픽업</h4>
+                    <p className="text-sm text-gray-500">공항에서 바로</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 bg-violet-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Users className="w-5 h-5 text-violet-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">검증된 차주</h4>
+                    <p className="text-sm text-gray-500">안심 거래</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <Shield className="w-5 h-5 text-amber-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-900">안전 보장</h4>
+                    <p className="text-sm text-gray-500">보험 적용</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* 장점 2 */}
-            <div className="bg-gradient-to-br from-[#111c2e] to-[#0d1d31] border border-white/10 rounded-2xl p-6 hover:border-[#c4ff00]/30 transition-all group">
-              <div className="w-12 h-12 bg-[#c4ff00]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#c4ff00]/20 transition-colors">
-                <Car className="w-6 h-6 text-[#c4ff00]" />
+            {/* 오른쪽: 이미지/비주얼 */}
+            <div className="relative">
+              <div className="bg-gradient-to-br from-blue-500 to-blue-700 rounded-3xl p-8 text-white">
+                <div className="text-center">
+                  <Car className="w-20 h-20 mx-auto mb-6 opacity-90" />
+                  <h3 className="text-2xl font-bold mb-3">차주가 되어보세요</h3>
+                  <p className="text-blue-100 mb-6">
+                    여행 중 유휴 차량으로 수익을 창출하세요.
+                    <br />
+                    주차비 절약 + 추가 수익까지!
+                  </p>
+                  <Button 
+                    className="bg-white text-blue-600 hover:bg-blue-50 rounded-full px-8"
+                    onClick={() => router.push('/vehicles/new')}
+                  >
+                    차량 등록하기 <ChevronRight className="w-4 h-4 ml-1" />
+                  </Button>
+                </div>
               </div>
-              <h3 className="text-lg font-bold text-white mb-2">다양한 차량</h3>
-              <p className="text-gray-400 text-sm">
-                경차부터 SUV까지, 여행 목적에 맞는 차량을 선택하세요.
-              </p>
-            </div>
-
-            {/* 장점 3 */}
-            <div className="bg-gradient-to-br from-[#111c2e] to-[#0d1d31] border border-white/10 rounded-2xl p-6 hover:border-[#c4ff00]/30 transition-all group">
-              <div className="w-12 h-12 bg-[#c4ff00]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#c4ff00]/20 transition-colors">
-                <Clock className="w-6 h-6 text-[#c4ff00]" />
-              </div>
-              <h3 className="text-lg font-bold text-white mb-2">편리한 픽업</h3>
-              <p className="text-gray-400 text-sm">
-                공항에서 바로 차량을 인수하고 반납하세요.
-              </p>
-            </div>
-
-            {/* 장점 4 */}
-            <div className="bg-gradient-to-br from-[#111c2e] to-[#0d1d31] border border-white/10 rounded-2xl p-6 hover:border-[#c4ff00]/30 transition-all group">
-              <div className="w-12 h-12 bg-[#c4ff00]/10 rounded-xl flex items-center justify-center mb-4 group-hover:bg-[#c4ff00]/20 transition-colors">
-                <Shield className="w-6 h-6 text-[#c4ff00]" />
-              </div>
-              <h3 className="text-lg font-bold text-white mb-2">안심 공유</h3>
-              <p className="text-gray-400 text-sm">
-                검증된 차주와 이용자만 연결하는 안전한 플랫폼입니다.
-              </p>
+              
+              {/* 데코레이션 */}
+              <div className="absolute -top-4 -right-4 w-24 h-24 bg-blue-200 rounded-full opacity-50 -z-10" />
+              <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-blue-100 rounded-full opacity-50 -z-10" />
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA 섹션 */}
-      <section className="py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-[#c4ff00] to-[#9ed900]" />
-        
-        {/* 배경 패턴 */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-10 left-10">
-            <Plane className="w-20 h-20 text-[#0a1628]" />
-          </div>
-          <div className="absolute bottom-10 right-10">
-            <Car className="w-24 h-24 text-[#0a1628]" />
-          </div>
-        </div>
-        
-        <div className="container max-w-4xl mx-auto px-4 text-center relative z-10">
-          <h2 className="text-4xl md:text-5xl font-bold text-[#0a1628] mb-6">
-            지금 바로 시작하세요!
+      <section className="relative py-20 overflow-hidden">
+        <div 
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: `linear-gradient(135deg, rgba(30, 58, 138, 0.95) 0%, rgba(59, 130, 246, 0.9) 100%), 
+              url('https://images.unsplash.com/photo-1449965408869-ebd3fee56d09?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')`,
+          }}
+        />
+        <div className="relative container max-w-4xl mx-auto px-4 text-center text-white">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            지금 바로 시작하세요
           </h2>
-          <p className="text-xl text-[#0a1628]/80 mb-10">
-            차량을 등록하고 수익을 창출하거나,
-            저렴한 가격에 차량을 이용해보세요.
+          <p className="text-xl text-blue-100 mb-8">
+            제주 여행의 새로운 시작, TripCarShare와 함께
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               size="lg"
-              className="bg-[#0a1628] text-white hover:bg-[#0d1d31] rounded-full px-8"
-              onClick={() => router.push('/vehicles/new')}
-            >
-              <Car className="w-5 h-5 mr-2" />
-              차량 등록하기
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-[#0a1628] text-[#0a1628] hover:bg-[#0a1628]/10 rounded-full px-8"
+              className="bg-white text-blue-600 hover:bg-gray-100 rounded-full px-8 h-14 text-base"
               onClick={() => router.push('/vehicles')}
             >
               <Search className="w-5 h-5 mr-2" />
               차량 검색하기
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-2 border-white text-white hover:bg-white/10 rounded-full px-8 h-14 text-base"
+              onClick={() => router.push('/vehicles/new')}
+            >
+              <Car className="w-5 h-5 mr-2" />
+              차량 등록하기
             </Button>
           </div>
         </div>
