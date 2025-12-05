@@ -6,6 +6,8 @@ import { Footer } from "@/components/footer";
 import { Providers } from "@/components/providers/providers";
 import "./globals.css";
 
+export const dynamic = "force-dynamic";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
