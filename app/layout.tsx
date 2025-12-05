@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/ogtag.jpg", // 정적 이미지 파일 직접 사용
+        url: "/car_og.jpg", // 정적 이미지 파일 직접 사용
         width: 1200,
         height: 630,
         alt: "TripCarShare - 제주 공항 차량 공유",
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "TripCarShare - 제주 공항 차량 공유",
     description: "제주 공항에서 시작하는 스마트한 P2P 차량 공유 서비스",
-    images: ["/ogtag.jpg"], // 정적 이미지 파일 직접 사용
+    images: ["/car_og.jpg"], // 정적 이미지 파일 직접 사용
   },
   robots: {
     index: true,
