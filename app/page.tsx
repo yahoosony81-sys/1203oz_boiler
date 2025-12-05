@@ -41,14 +41,14 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen">
-      {/* 히어로 섹션 - 공항 스타일 */}
+      {/* 히어로 섹션 - 여행 스타일 */}
       <section className="relative overflow-hidden">
-        {/* 배경 이미지 & 오버레이 - 공항에서 차량으로 이동하는 비즈니스 여행자 커플 */}
+        {/* 배경 이미지 & 오버레이 - 차량에서 손을 흔드는 즐거운 여행자 */}
         <div 
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: `linear-gradient(to right, rgba(15, 23, 42, 0.92) 0%, rgba(30, 58, 138, 0.85) 40%, rgba(59, 130, 246, 0.5) 100%), 
-              url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?ixlib=rb-4.0.3&auto=format&fit=crop&w=2069&q=80')`,
+            backgroundImage: `linear-gradient(to right, rgba(15, 23, 42, 0.88) 0%, rgba(30, 58, 138, 0.75) 50%, rgba(59, 130, 246, 0.4) 100%), 
+              url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-4.0.3&auto=format&fit=crop&w=2121&q=80')`,
           }}
         />
         
