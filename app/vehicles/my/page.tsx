@@ -102,7 +102,7 @@ export default function MyVehiclesPage() {
     
     if (result.success && result.data) {
       setVehicles((prev) =>
-        prev.map((v) => (v.id === vehicleId ? result.data! : v))
+        prev.map((v) => (v.id === vehicleId ? { ...result.data!, bookingSummary: v.bookingSummary } : v))
       );
     } else {
       alert(result.error || "상태 변경에 실패했습니다.");
