@@ -175,18 +175,18 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             {/* 경차 */}
             <div className="group relative">
-              <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-[2rem] p-8 text-white text-center transform transition-transform group-hover:scale-105 shadow-lg">
-                <p className="text-emerald-100 text-lg mb-1">경차</p>
-                <p className="text-sm text-emerald-200 mb-4">모닝, 스파크 등</p>
-                <div className="flex items-baseline justify-center">
+              <div className="bg-gray-100 rounded-[2rem] p-8 text-center transform transition-transform group-hover:scale-105 shadow-lg border border-gray-200">
+                <p className="text-gray-800 text-lg font-semibold mb-1">경차</p>
+                <p className="text-sm text-gray-500 mb-4">모닝, 스파크 등</p>
+                <div className="flex items-baseline justify-center text-gray-900">
                   <span className="text-2xl align-top">₩</span>
                   <span className="text-6xl font-bold">3</span>
                   <span className="text-4xl font-bold">.5</span>
                   <span className="text-xl ml-1">만원</span>
                 </div>
-                <p className="text-emerald-200 mt-2">1일 기준</p>
+                <p className="text-gray-500 mt-2">1일 기준</p>
                 <Button 
-                  className="mt-6 bg-white text-emerald-600 hover:bg-emerald-50 rounded-full px-6"
+                  className="mt-6 bg-gray-800 text-white hover:bg-gray-700 rounded-full px-6"
                   onClick={() => router.push('/vehicles?type=compact')}
                 >
                   차량 보기 <ChevronRight className="w-4 h-4 ml-1" />
@@ -196,18 +196,18 @@ export default function HomePage() {
 
             {/* 중형 */}
             <div className="group relative">
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-[2rem] p-8 text-white text-center transform transition-transform group-hover:scale-105 shadow-lg">
-                <p className="text-blue-100 text-lg mb-1">중형 세단</p>
-                <p className="text-sm text-blue-200 mb-4">아반떼, K3 등</p>
-                <div className="flex items-baseline justify-center">
+              <div className="bg-gray-100 rounded-[2rem] p-8 text-center transform transition-transform group-hover:scale-105 shadow-lg border border-gray-200">
+                <p className="text-gray-800 text-lg font-semibold mb-1">중형 세단</p>
+                <p className="text-sm text-gray-500 mb-4">아반떼, K3 등</p>
+                <div className="flex items-baseline justify-center text-gray-900">
                   <span className="text-2xl align-top">₩</span>
                   <span className="text-6xl font-bold">5</span>
                   <span className="text-4xl font-bold">.0</span>
                   <span className="text-xl ml-1">만원</span>
                 </div>
-                <p className="text-blue-200 mt-2">1일 기준</p>
+                <p className="text-gray-500 mt-2">1일 기준</p>
                 <Button 
-                  className="mt-6 bg-white text-blue-600 hover:bg-blue-50 rounded-full px-6"
+                  className="mt-6 bg-gray-800 text-white hover:bg-gray-700 rounded-full px-6"
                   onClick={() => router.push('/vehicles?type=sedan')}
                 >
                   차량 보기 <ChevronRight className="w-4 h-4 ml-1" />
@@ -217,18 +217,18 @@ export default function HomePage() {
 
             {/* SUV */}
             <div className="group relative">
-              <div className="bg-gradient-to-br from-violet-500 to-violet-600 rounded-[2rem] p-8 text-white text-center transform transition-transform group-hover:scale-105 shadow-lg">
-                <p className="text-violet-100 text-lg mb-1">SUV</p>
-                <p className="text-sm text-violet-200 mb-4">투싼, 스포티지 등</p>
-                <div className="flex items-baseline justify-center">
+              <div className="bg-gray-100 rounded-[2rem] p-8 text-center transform transition-transform group-hover:scale-105 shadow-lg border border-gray-200">
+                <p className="text-gray-800 text-lg font-semibold mb-1">SUV</p>
+                <p className="text-sm text-gray-500 mb-4">투싼, 스포티지 등</p>
+                <div className="flex items-baseline justify-center text-gray-900">
                   <span className="text-2xl align-top">₩</span>
                   <span className="text-6xl font-bold">7</span>
                   <span className="text-4xl font-bold">.0</span>
                   <span className="text-xl ml-1">만원</span>
                 </div>
-                <p className="text-violet-200 mt-2">1일 기준</p>
+                <p className="text-gray-500 mt-2">1일 기준</p>
                 <Button 
-                  className="mt-6 bg-white text-violet-600 hover:bg-violet-50 rounded-full px-6"
+                  className="mt-6 bg-gray-800 text-white hover:bg-gray-700 rounded-full px-6"
                   onClick={() => router.push('/vehicles?type=suv')}
                 >
                   차량 보기 <ChevronRight className="w-4 h-4 ml-1" />
