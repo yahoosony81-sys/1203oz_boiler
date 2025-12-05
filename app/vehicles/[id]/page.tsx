@@ -26,8 +26,10 @@ import {
   ChevronLeft, ChevronRight, Check, AlertCircle 
 } from "lucide-react";
 
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { DateRangePicker } from "@/components/date-range-picker";
 import { getVehicleById } from "@/actions/vehicle-actions";
 import { createBooking } from "@/actions/booking-actions";
@@ -57,6 +59,7 @@ export default function VehicleDetailPage({ params }: VehicleDetailPageProps) {
   const [isBooking, setIsBooking] = useState(false);
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState(false);
+  const [termsAgreed, setTermsAgreed] = useState(false);
 
   // 차량 정보 조회
   useEffect(() => {
@@ -371,6 +374,25 @@ export default function VehicleDetailPage({ params }: VehicleDetailPageProps) {
                 </div>
               )}
 
+              {/* 약관 동의 */}
+              <div className="flex items-start gap-2 pt-2">
+                <Checkbox
+                  id="terms"
+                  checked={termsAgreed}
+                  onCheckedChange={(checked) => setTermsAgreed(checked === true)}
+                />
+                <label htmlFor="terms" className="text-sm text-gray-600 leading-tight">
+                  <Link href="/terms" target="_blank" className="text-blue-600 hover:underline">
+                    이용약관
+                  </Link>
+                  {" 및 "}
+                  <Link href="/privacy" target="_blank" className="text-blue-600 hover:underline">
+                    개인정보처리방침
+                  </Link>
+                  에 동의합니다.
+                </label>
+              </div>
+
               {/* 에러 메시지 */}
               {bookingError && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-3 py-2 rounded text-sm">
@@ -383,7 +405,7 @@ export default function VehicleDetailPage({ params }: VehicleDetailPageProps) {
                 className="w-full"
                 size="lg"
                 onClick={handleBooking}
-                disabled={isBooking || !dateRange?.from || !dateRange?.to}
+                disabled={isBooking || !dateRange?.from || !dateRange?.to || !termsAgreed}
               >
                 {!isLoaded ? (
                   "로딩 중..."
@@ -391,6 +413,8 @@ export default function VehicleDetailPage({ params }: VehicleDetailPageProps) {
                   "로그인하고 예약하기"
                 ) : isBooking ? (
                   "예약 중..."
+                ) : !termsAgreed ? (
+                  "약관에 동의해주세요"
                 ) : (
                   "예약 신청하기"
                 )}

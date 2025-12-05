@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import Navbar from "@/components/Navbar";
+import { Footer } from "@/components/footer";
 import { Providers } from "@/components/providers/providers";
 import "./globals.css";
 
@@ -19,8 +20,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SaaS 템플릿",
-  description: "Next.js + Clerk + Supabase 보일러플레이트",
+  title: "TripCarShare - 제주 공항 차량 공유",
+  description: "제주 공항에서 시작하는 스마트한 P2P 차량 공유 서비스",
 };
 
 export default function RootLayout({
@@ -31,11 +32,14 @@ export default function RootLayout({
   return (
       <html lang="ko">
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
         >
         <Providers>
             <Navbar />
-            {children}
+            <main className="flex-grow">
+              {children}
+            </main>
+            <Footer />
         </Providers>
         </body>
       </html>

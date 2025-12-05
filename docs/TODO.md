@@ -148,65 +148,66 @@
 ## PHASE 5 — 결제 기능 (Toss Payments) 통합
 
 ### 5-1. 결제 버튼 활성화 조건
-- [ ] booking.status === "approved" 일 때만 표시
+- [x] booking.status === "approved" 일 때만 표시
 
 ### 5-2. createPaymentIntent (결제 준비)
 
 **Server Action 구현**
-- [ ] orderId = bookingId 기반 생성
-- [ ] amount = total_price
-- [ ] Toss API 호출
-- [ ] 결제창 URL 반환
-- [ ] 사용자 redirect
+- [x] orderId = bookingId 기반 생성
+- [x] amount = total_price
+- [x] Toss API 호출
+- [x] 결제창 URL 반환
+- [x] 사용자 redirect
 
 ### 5-3. approvePayment (Redirect route)
 
 **Next.js route handler (/payments/approve)**
-- [ ] paymentKey, orderId 검증
-- [ ] Toss 승인 API 요청
-- [ ] Supabase에서 booking 조회
-- [ ] booking.payment_status = paid 업데이트
-- [ ] payment_id 저장
-- [ ] 성공 시 /payments/success로 이동
+- [x] paymentKey, orderId 검증
+- [x] Toss 승인 API 요청
+- [x] Supabase에서 booking 조회
+- [x] booking.payment_status = paid 업데이트
+- [x] payment_id 저장
+- [x] 성공 시 /payments/success로 이동
 
 ### 5-4. failPayment (Redirect route)
-- [ ] Toss 실패 파라미터 받기
-- [ ] bookings.payment_status = failed
-- [ ] /payments/fail로 redirect
+- [x] Toss 실패 파라미터 받기
+- [x] bookings.payment_status = failed
+- [x] /payments/fail로 redirect
 
 ### 5-5. webhookSync (선택)
-- [ ] Toss webhook route 생성
-- [ ] 중복호출 대비 idempotency 처리
-- [ ] 결제 취소/실패 시 bookings 업데이트
+- [ ] Toss webhook route 생성 (MVP 이후)
+- [ ] 중복호출 대비 idempotency 처리 (MVP 이후)
+- [ ] 결제 취소/실패 시 bookings 업데이트 (MVP 이후)
 
 ### 5-6. 결제 UI
 
 **차량 상세 페이지**
-- [ ] "결제하기" 버튼
-- [ ] 로딩 처리
-- [ ] 결제 금액 표시
+- [x] "결제하기" 버튼 (PaymentButton 컴포넌트)
+- [x] 로딩 처리
+- [x] 결제 금액 표시
 
 **결제 성공 페이지 (/payments/success)**
-- [ ] 결제 금액
-- [ ] 예약 ID
-- [ ] 차량 정보
-- [ ] "예약 확인하기" 버튼
+- [x] 결제 금액
+- [x] 예약 ID
+- [x] 차량 정보
+- [x] "예약 확인하기" 버튼
 
 **결제 실패 페이지 (/payments/fail)**
-- [ ] 실패 사유 표시
-- [ ] 재시도 버튼
+- [x] 실패 사유 표시
+- [x] 재시도 버튼
 
 ---
 
 ## PHASE 6 — 약관 & 가이드
 
 ### 6-1. 약관 페이지
-- [ ] 대여 동의서 페이지 생성
-- [ ] 예약 신청 시 "동의 체크박스" 필수
+- [x] 대여 동의서 페이지 생성 (/terms)
+- [x] 개인정보처리방침 페이지 생성 (/privacy)
+- [x] 예약 신청 시 "동의 체크박스" 필수
 
 ### 6-2. 가이드 페이지
-- [ ] 차주용 가이드
-- [ ] 이용자용 가이드
+- [x] 차주용 가이드 (/guide/owner)
+- [x] 이용자용 가이드 (/guide/renter)
 
 ---
 
@@ -217,7 +218,8 @@
 - [x] BookingCard
 - [x] StatusBadge
 - [x] Navbar
-- [ ] Footer
+- [x] Footer
+- [x] PaymentButton
 
 ---
 
