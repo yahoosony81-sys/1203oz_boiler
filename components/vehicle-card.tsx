@@ -54,7 +54,7 @@ export function VehicleCard({
   };
 
   return (
-    <Card className="overflow-hidden hover:shadow-lg transition-shadow">
+    <Card className="overflow-hidden hover:shadow-lg transition-shadow" data-testid="vehicle-card">
       {/* 이미지 */}
       <div className="relative aspect-[16/10] bg-gray-100">
         {vehicle.images && vehicle.images.length > 0 ? (

@@ -175,9 +175,9 @@
 - [x] /payments/fail로 redirect
 
 ### 5-5. webhookSync (선택)
-- [ ] Toss webhook route 생성 (MVP 이후)
-- [ ] 중복호출 대비 idempotency 처리 (MVP 이후)
-- [ ] 결제 취소/실패 시 bookings 업데이트 (MVP 이후)
+- [x] Toss webhook route 생성 (/api/webhooks/toss)
+- [x] 중복호출 대비 idempotency 처리
+- [x] 결제 취소/실패 시 bookings 업데이트
 
 ### 5-6. 결제 UI
 
@@ -224,12 +224,13 @@
 ---
 
 ## PHASE 8 — 테스트
-- [ ] 차량 등록 → 검색 → 예약 → 승인 → 결제 전체 플로우 확인
-- [ ] 결제 실패/재시도 테스트
-- [ ] 중복 예약 테스트
-- [ ] 날짜 계산 검증
-- [ ] 이미지 업로드 실패 대응
-- [ ] 모바일 반응형 체크
+- [x] Playwright E2E 테스트 설정 (playwright.config.ts)
+- [x] 홈페이지 테스트 (tests/e2e/home.spec.ts)
+- [x] 차량 검색/상세 테스트 (tests/e2e/vehicles.spec.ts)
+- [x] 예약 플로우 테스트 (tests/e2e/booking-flow.spec.ts)
+- [x] 인증 테스트 (tests/e2e/auth.spec.ts)
+- [x] 반응형 UI 테스트 (tests/e2e/responsive.spec.ts)
+- [ ] 실제 데이터로 전체 플로우 수동 테스트 필요
 
 ---
 
@@ -243,5 +244,7 @@
   - [ ] Toss SecretKey
 
 ### 9-2. 배포 테스트
-- [ ] production 환경에서 결제 실제로 작동하는지 확인
-- [ ] 모바일 UI 재확인
+- [x] 모바일 반응형 Navbar 개선
+- [x] 모바일 E2E 테스트 추가 (Playwright mobile-chrome, mobile-safari)
+- [ ] production 환경에서 결제 실제로 작동하는지 확인 (Toss API 키 필요)
+- [ ] 모바일 UI 수동 테스트
