@@ -390,10 +390,10 @@ export default function HomePage() {
       {/* CTA 섹션 */}
       <section className="relative py-20 overflow-hidden">
         <div 
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: `linear-gradient(135deg, rgba(30, 58, 138, 0.95) 0%, rgba(59, 130, 246, 0.9) 100%), 
-              url('https://images.unsplash.com/photo-1449965408869-ebd3fee56d09?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')`,
+            backgroundImage: `linear-gradient(to right, rgba(15, 23, 42, 0.65) 0%, rgba(30, 58, 138, 0.5) 50%, rgba(59, 130, 246, 0.2) 100%), 
+              url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?ixlib=rb-4.0.3&auto=format&fit=crop&w=2121&q=80')`,
           }}
         />
         <div className="relative container max-w-4xl mx-auto px-4 text-center text-white">
