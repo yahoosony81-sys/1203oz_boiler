@@ -43,12 +43,12 @@ export default function HomePage() {
     <div className="min-h-screen">
       {/* 히어로 섹션 - 공항 스타일 */}
       <section className="relative overflow-hidden">
-        {/* 배경 이미지 & 오버레이 */}
+        {/* 배경 이미지 & 오버레이 - 공항에서 차량으로 이동하는 비즈니스 여행자 커플 */}
         <div 
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: `linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 58, 138, 0.8) 50%, rgba(59, 130, 246, 0.7) 100%), 
-              url('https://images.unsplash.com/photo-1436491865332-7a61a109cc05?ixlib=rb-4.0.3&auto=format&fit=crop&w=2074&q=80')`,
+            backgroundImage: `linear-gradient(to right, rgba(15, 23, 42, 0.92) 0%, rgba(30, 58, 138, 0.85) 40%, rgba(59, 130, 246, 0.5) 100%), 
+              url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?ixlib=rb-4.0.3&auto=format&fit=crop&w=2069&q=80')`,
           }}
         />
         
