@@ -6,9 +6,6 @@ import { Footer } from "@/components/footer";
 import { Providers } from "@/components/providers/providers";
 import "./globals.css";
 
-// Clerk Provider 사용으로 인한 동적 렌더링 강제
-export const dynamic = "force-dynamic";
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -19,7 +16,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// metadataBase는 OG 이미지의 절대 URL 생성에 필수
 export const metadata: Metadata = {
   metadataBase: new URL("https://tripcarshare.vercel.app"),
   title: "TripCarShare - 제주 공항 차량 공유",
@@ -35,10 +31,11 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/car_og.jpg", // 정적 이미지 파일 직접 사용
+        url: "https://tripcarshare.vercel.app/car_og.jpg", // 절대 URL 사용
         width: 1200,
         height: 630,
         alt: "TripCarShare - 제주 공항 차량 공유",
+        type: "image/jpeg",
       },
     ],
   },
@@ -46,7 +43,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "TripCarShare - 제주 공항 차량 공유",
     description: "제주 공항에서 시작하는 스마트한 P2P 차량 공유 서비스",
-    images: ["/car_og.jpg"], // 정적 이미지 파일 직접 사용
+    images: ["https://tripcarshare.vercel.app/car_og.jpg"], // 절대 URL 사용
   },
   robots: {
     index: true,
