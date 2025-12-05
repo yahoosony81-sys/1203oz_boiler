@@ -75,7 +75,7 @@ function VehicleSearchContent() {
         console.log("검색 결과:", result.data.length, "건");
         
         // 정렬 적용
-        let sortedVehicles = [...result.data];
+        const sortedVehicles = [...result.data];
         switch (sortBy) {
           case "price":
             sortedVehicles.sort((a, b) => a.price_per_day - b.price_per_day);

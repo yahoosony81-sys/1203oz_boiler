@@ -17,7 +17,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { createServiceRoleClient } from "@/lib/supabase/service-role";
+import { getServiceRoleClient } from "@/lib/supabase/service-role";
 import crypto from "crypto";
 
 // Webhook Secret (Toss에서 제공)
@@ -124,10 +124,10 @@ export async function POST(request: NextRequest) {
     }
     
     // 4. Supabase 클라이언트 (Service Role)
-    const supabase = createServiceRoleClient();
+    const supabase = getServiceRoleClient();
     
     // 5. 이벤트 타입별 처리
-    const { orderId, paymentKey, status } = payload.data;
+    const { orderId, paymentKey } = payload.data;
     
     // order_id로 예약 조회
     const { data: booking, error: bookingError } = await supabase

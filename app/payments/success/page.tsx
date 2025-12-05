@@ -24,15 +24,12 @@ function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   
   const [isProcessing, setIsProcessing] = useState(true);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [bookingId, setBookingId] = useState<string | null>(null);
 
   // URL 파라미터
   const paymentKey = searchParams.get("paymentKey");
   const orderId = searchParams.get("orderId");
   const amount = searchParams.get("amount");
-  const bookingIdParam = searchParams.get("bookingId");
 
   useEffect(() => {
     async function processPayment() {
@@ -58,9 +55,7 @@ function PaymentSuccessContent() {
         );
         
         if (result.success && result.data) {
-          console.log("결제 승인 성공");
-          setIsSuccess(true);
-          setBookingId(result.data.bookingId);
+          console.log("결제 승인 성공, bookingId:", result.data.bookingId);
         } else {
           console.error("결제 승인 실패:", result.error);
           setError(result.error || "결제 처리에 실패했습니다.");

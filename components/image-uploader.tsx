@@ -14,7 +14,7 @@ import { Upload, X, ImageIcon, Loader2 } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 
 interface ImageUploaderProps {
   images: string[];
@@ -37,8 +37,6 @@ export function ImageUploader({
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
-  
-  const supabase = createClient();
 
   // 파일 업로드 처리
   const uploadFile = useCallback(async (file: File): Promise<string | null> => {
@@ -94,7 +92,7 @@ export function ImageUploader({
       setUploadError("업로드 중 오류가 발생했습니다.");
       return null;
     }
-  }, [user, supabase, bucketName, folderPath]);
+  }, [user, bucketName, folderPath]);
 
   // 파일 선택 처리
   const handleFileSelect = useCallback(async (files: FileList | null) => {
