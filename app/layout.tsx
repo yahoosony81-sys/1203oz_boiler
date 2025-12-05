@@ -19,7 +19,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// metadataBase는 OG 이미지의 절대 URL 생성에 필수
 export const metadata: Metadata = {
+  metadataBase: new URL("https://tripcarshare.vercel.app"),
   title: "TripCarShare - 제주 공항 차량 공유",
   description: "제주 공항에서 시작하는 스마트한 P2P 차량 공유 서비스. 현지 차주와 직접 연결되는 편리하고 합리적인 차량 공유 플랫폼",
   keywords: ["제주", "렌트카", "차량 공유", "P2P", "공항", "여행", "TripCarShare"],
@@ -27,7 +29,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "TripCarShare - 제주 공항 차량 공유",
     description: "제주 공항에서 시작하는 스마트한 P2P 차량 공유 서비스. 현지 차주와 직접 연결되는 편리하고 합리적인 차량 공유 플랫폼",
-    url: "https://nextjs-supabase-boilerplate-main-446nwq528.vercel.app",
+    url: "https://tripcarshare.vercel.app",
     siteName: "TripCarShare",
     locale: "ko_KR",
     type: "website",
