@@ -4,7 +4,7 @@ import { SignedOut, SignInButton, SignedIn, UserButton, useUser } from "@clerk/n
 import Link from "next/link";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Car, Search, Menu, X, BookOpen, Calendar } from "lucide-react";
+import { Car, Search, Menu, X, BookOpen, Calendar, User } from "lucide-react";
 
 const Navbar = () => {
   const { isLoaded, user } = useUser();
@@ -38,6 +38,14 @@ const Navbar = () => {
           
           {isLoaded && user && (
             <>
+              <Link 
+                href="/my" 
+                className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors"
+              >
+                <User className="w-4 h-4" />
+                <span>마이페이지</span>
+              </Link>
+              
               <Link 
                 href="/vehicles/my" 
                 className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition-colors"
@@ -114,6 +122,15 @@ const Navbar = () => {
             
             {isLoaded && user && (
               <>
+                <Link 
+                  href="/my" 
+                  onClick={closeMobileMenu}
+                  className="flex items-center gap-3 p-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 rounded-lg transition-colors"
+                >
+                  <User className="w-5 h-5" />
+                  <span>마이페이지</span>
+                </Link>
+                
                 <Link 
                   href="/vehicles/my" 
                   onClick={closeMobileMenu}

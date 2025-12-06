@@ -271,3 +271,69 @@
 - [x] 모바일 E2E 테스트 추가 (Playwright mobile-chrome, mobile-safari)
 - [ ] production 환경에서 결제 실제로 작동하는지 확인 (Toss API 키 필요)
 - [ ] 모바일 UI 수동 테스트
+
+---
+
+## PHASE 10 — 마이페이지 기능
+
+### 10-1. Server Actions 구현
+
+**my-page-actions.ts 생성**
+- [x] getMyOrders: 결제 완료된 예약 조회
+  - [x] bookings 테이블에서 payment_status = 'paid'인 예약만 조회
+  - [x] vehicles, users 테이블 조인하여 차량 정보 및 차주 정보 포함
+  - [x] 최신순 정렬
+- [x] getOrderDetail: 주문 상세 정보 조회
+  - [x] booking_id로 상세 정보 조회
+  - [x] 차량 정보, 차주 정보, 결제 정보 포함
+  - [x] 대여 일수 계산
+- [x] getMyProfileStats: 사용자 통계 정보 조회
+  - [x] 총 주문 수 (payment_status = 'paid')
+  - [x] 총 결제 금액 (paid 예약의 total_price 합계)
+  - [x] 진행 중인 예약 수 (status = 'approved' 또는 'pending')
+  - [x] 등록한 차량 수 (owner인 경우)
+
+### 10-2. 마이페이지 메인 컴포넌트
+
+**app/my/page.tsx 생성**
+- [x] 사용자 프로필 섹션
+  - [x] Clerk에서 사용자 정보 가져오기
+  - [x] Supabase users 테이블에서 추가 정보 조회
+  - [x] 프로필 이미지, 이름, 이메일, 전화번호, 역할 표시
+- [x] 통계 카드 섹션
+  - [x] 총 주문 수, 총 결제 금액, 진행 중 예약 수, 등록 차량 수
+- [x] 주문 내역 섹션
+  - [x] 필터 (전체/결제 완료/진행 중/취소됨)
+  - [x] 주문 카드 목록
+  - [x] 빈 상태 처리
+
+### 10-3. 주문 카드 컴포넌트
+
+**components/order-card.tsx 생성**
+- [x] 주문 번호, 주문일시 표시
+- [x] 차량 정보 (이미지, 차종, 연식)
+- [x] 대여 기간 표시
+- [x] 결제 금액 표시
+- [x] 상태 배지 표시 (예약 상태, 결제 상태)
+- [x] 주문 상세 보기 버튼
+
+### 10-4. 통계 카드 컴포넌트
+
+**components/stats-card.tsx 생성**
+- [x] 아이콘, 제목, 값 표시
+- [x] 링크 기능 (선택)
+
+### 10-5. 주문 상세 페이지
+
+**app/my/orders/[id]/page.tsx 생성**
+- [x] 기본 정보 (주문 번호, 주문일시, 결제일시)
+- [x] 차량 정보 (이미지 갤러리, 상세 정보)
+- [x] 예약 정보 (대여 기간, 픽업/반납 위치)
+- [x] 결제 정보 (금액, 상태, 결제 ID)
+- [x] 차주 정보 (이름, 연락처)
+- [x] 상태 정보 및 액션 버튼
+
+### 10-6. 네비게이션 업데이트
+
+**components/Navbar.tsx**
+- [x] 마이페이지 링크 추가 (데스크톱 및 모바일 메뉴)
