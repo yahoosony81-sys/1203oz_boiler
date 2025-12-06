@@ -19,8 +19,27 @@ export function Providers({ children }: { children: React.ReactNode }) {
       localization={koKR}
       appearance={{
         // Tailwind CSS 4 호환성을 위한 설정
-        // 공식 문서: https://clerk.com/docs/guides/customizing-clerk/localization
         cssLayerName: "clerk",
+        elements: {
+          // 카카오 로그인 버튼 스타일 (노란색)
+          socialButtonsIconButton__kakao: {
+            backgroundColor: "#FEE500",
+            borderColor: "#FEE500",
+            "&:hover": {
+              backgroundColor: "#FFEB3B",
+              borderColor: "#FFEB3B",
+            },
+          },
+          socialButtonsBlockButton__kakao: {
+            backgroundColor: "#FEE500",
+            borderColor: "#FEE500",
+            color: "#000000",
+            "&:hover": {
+              backgroundColor: "#FFEB3B",
+              borderColor: "#FFEB3B",
+            },
+          },
+        },
       }}
     >
       <SyncUserProvider>{children}</SyncUserProvider>
