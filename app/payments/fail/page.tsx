@@ -1,20 +1,20 @@
 /**
  * @file app/payments/fail/page.tsx
- * @description 결제 실패 페이지
+ * @description 결제 실패 페이지 (Toss Payments v1)
  * 
- * Toss Payments에서 결제 실패 시 리다이렉트되는 페이지입니다.
+ * Toss Payments v1 결제창에서 결제 실패 시 리다이렉트되는 페이지입니다.
+ * 요구사항: DB 변경 없이 안내 메시지만 표시합니다.
  */
 
 "use client";
 
-import { useEffect, Suspense } from "react";
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { XCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { handlePaymentFailure } from "@/actions/payment-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -42,12 +42,7 @@ function PaymentFailContent() {
   const code = searchParams.get("code") || "UNKNOWN";
   const message = searchParams.get("message") || "알 수 없는 오류가 발생했습니다.";
 
-  // 결제 실패 처리
-  useEffect(() => {
-    if (orderId) {
-      handlePaymentFailure(orderId, code, message);
-    }
-  }, [orderId, code, message]);
+  // 결제 실패 처리: DB 변경 없이 안내 메시지만 표시 (요구사항)
 
   // 에러 메시지 결정
   const errorMessage = ERROR_MESSAGES[code] || message;

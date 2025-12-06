@@ -1,16 +1,20 @@
 /**
  * @file components/payment-button.tsx
- * @description Toss Payments 결제 버튼 컴포넌트
+ * @description Toss Payments v1 결제창 버튼 컴포넌트
  * 
  * 승인된 예약에 대해 결제를 진행할 수 있는 버튼입니다.
- * Toss Payments SDK를 사용하여 결제창을 호출합니다.
+ * Toss Payments v1 결제창 방식으로 결제창을 호출합니다.
+ * 
+ * v1 결제창 방식:
+ * - 서버에서 결제창 URL 생성
+ * - 클라이언트에서 결제창 URL로 리다이렉트
+ * - 결제 완료 후 successUrl/failUrl로 리다이렉트
  */
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Loader2, CreditCard } from "lucide-react";
-import { loadTossPayments, TossPaymentsWidgets } from "@tosspayments/tosspayments-sdk";
 
 import { Button } from "@/components/ui/button";
 import { createPaymentIntent } from "@/actions/payment-actions";
@@ -21,31 +25,12 @@ interface PaymentButtonProps {
   disabled?: boolean;
 }
 
-// Toss 클라이언트 키 (환경 변수 또는 테스트 키)
-const TOSS_CLIENT_KEY = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || "test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq";
-
 export function PaymentButton({ bookingId, amount, disabled }: PaymentButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [tossPayments, setTossPayments] = useState<TossPaymentsWidgets | null>(null);
-
-  // Toss Payments SDK 초기화
-  useEffect(() => {
-    async function initToss() {
-      try {
-        const toss = await loadTossPayments(TOSS_CLIENT_KEY);
-        // widgets 사용
-        const widgets = toss.widgets({ customerKey: "ANONYMOUS" });
-        setTossPayments(widgets);
-      } catch (err) {
-        console.error("Toss Payments 초기화 실패:", err);
-      }
-    }
-    initToss();
-  }, []);
 
   const handlePayment = async () => {
     setIsLoading(true);
-    console.group("[PaymentButton] 결제 시작");
+    console.group("[PaymentButton] 결제 시작 (v1 결제창)");
     
     try {
       // 1. 결제 준비 데이터 생성
@@ -62,38 +47,47 @@ export function PaymentButton({ bookingId, amount, disabled }: PaymentButtonProp
       const paymentData = result.data;
       console.log("결제 데이터:", paymentData);
       
-      // 2. Toss Payments 결제창 호출
-      if (tossPayments) {
-        // 금액 설정
-        await tossPayments.setAmount({
-          currency: "KRW",
-          value: paymentData.amount,
-        });
-        
-        // 결제 요청
-        await tossPayments.requestPayment({
-          orderId: paymentData.orderId,
-          orderName: paymentData.orderName,
-          customerName: paymentData.customerName,
-          successUrl: paymentData.successUrl,
-          failUrl: paymentData.failUrl,
-        });
-      } else {
-        // SDK 초기화 실패 시 직접 리다이렉트 (테스트용)
-        console.log("SDK 없음 - 테스트 모드로 진행");
-        window.location.href = `${paymentData.successUrl}&paymentKey=TEST_KEY&amount=${paymentData.amount}`;
-      }
+      // 2. Toss Payments v1 결제창 호출 (form submit 방식)
+      // v1 결제창은 form을 submit하여 결제창 페이지로 이동합니다.
+      
+      const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || "test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq";
+      
+      // 결제창 form 생성 및 submit
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = "https://api.tosspayments.com/v1/payments/card";
+      form.target = "_self";
+      
+      // form 필드 추가
+      const fields = {
+        clientKey,
+        orderId: paymentData.orderId,
+        orderName: paymentData.orderName,
+        amount: paymentData.amount.toString(),
+        customerName: paymentData.customerName,
+        successUrl: paymentData.successUrl,
+        failUrl: paymentData.failUrl,
+      };
+      
+      Object.entries(fields).forEach(([key, value]) => {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = key;
+        input.value = value;
+        form.appendChild(input);
+      });
+      
+      console.log("결제창 form 생성 완료, submit 시작");
+      
+      // form을 body에 추가하고 submit
+      document.body.appendChild(form);
+      form.submit();
+      
+      // form은 submit 후 자동으로 제거됨 (페이지 이동)
       
     } catch (err) {
       console.error("결제 요청 실패:", err);
-      
-      // 사용자가 취소한 경우
-      if ((err as Error).message?.includes("User cancelled")) {
-        console.log("사용자가 결제를 취소함");
-      } else {
-        alert("결제 요청에 실패했습니다. 다시 시도해주세요.");
-      }
-    } finally {
+      alert("결제 요청에 실패했습니다. 다시 시도해주세요.");
       setIsLoading(false);
       console.groupEnd();
     }

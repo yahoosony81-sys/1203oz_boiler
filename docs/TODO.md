@@ -145,56 +145,79 @@
 
 ---
 
-## PHASE 5 — 결제 기능 (Toss Payments) 통합
+## PHASE 5 — 결제 기능 (Toss Payments v1) 통합
 
 ### 5-1. 결제 버튼 활성화 조건
 - [x] booking.status === "approved" 일 때만 표시
 
-### 5-2. createPaymentIntent (결제 준비)
+### 5-2. Toss Payments v1 결제창 방식 구현
 
-**Server Action 구현**
+**결제 버튼 컴포넌트 (PaymentButton)**
+- [x] v2 SDK 제거 및 v1 결제창 방식으로 변경
+- [x] form submit 방식으로 결제창 호출
+- [x] 로딩 처리
+- [x] 결제 금액 표시
+
+**createPaymentIntent (결제 준비)**
 - [x] orderId = bookingId 기반 생성
 - [x] amount = total_price
-- [x] Toss API 호출
-- [x] 결제창 URL 반환
-- [x] 사용자 redirect
+- [x] v1 결제창에 필요한 파라미터 반환 (orderId, orderName, amount, customerName, successUrl, failUrl)
+- [x] order_id를 bookings 테이블에 저장
 
-### 5-3. approvePayment (Redirect route)
+### 5-3. confirmPayment (결제 승인 처리)
 
-**Next.js route handler (/payments/approve)**
-- [x] paymentKey, orderId 검증
-- [x] Toss 승인 API 요청
+**Server Action 구현**
+- [x] paymentKey, orderId, amount 검증
+- [x] Toss Payments /v1/payments/confirm API 호출 (test_sk 사용)
 - [x] Supabase에서 booking 조회
-- [x] booking.payment_status = paid 업데이트
+- [x] booking.payment_status = 'paid' 업데이트
 - [x] payment_id 저장
-- [x] 성공 시 /payments/success로 이동
+- [x] approved_at 저장
+- [x] **예약 카트 비우기**: 해당 사용자의 pending + unpaid 예약 삭제 (현재 결제한 예약 제외)
 
-### 5-4. failPayment (Redirect route)
-- [x] Toss 실패 파라미터 받기
-- [x] bookings.payment_status = failed
-- [x] /payments/fail로 redirect
+### 5-4. 결제 실패 처리
 
-### 5-5. webhookSync (선택)
+**결제 실패 페이지 (/payments/fail)**
+- [x] Toss 실패 파라미터 받기 (code, message)
+- [x] **DB 변경 없음** (요구사항: 안내 메시지만 표시)
+- [x] 실패 사유 표시
+- [x] 재시도 버튼
+
+### 5-5. 결제 성공/실패 페이지
+
+**결제 성공 페이지 (/payments/success)**
+- [x] v1 결제창 리다이렉트 파라미터 처리 (paymentKey, orderId, amount)
+- [x] confirmPayment 호출하여 최종 승인 처리
+- [x] 결제 금액 표시
+- [x] 예약 ID 표시
+- [x] "예약 확인하기" 버튼
+
+**결제 실패 페이지 (/payments/fail)**
+- [x] v1 결제창 리다이렉트 파라미터 처리
+- [x] DB 변경 없이 안내 메시지만 표시
+- [x] 에러 코드별 메시지 매핑
+- [x] 재시도 버튼
+
+### 5-6. webhookSync (선택)
 - [x] Toss webhook route 생성 (/api/webhooks/toss)
 - [x] 중복호출 대비 idempotency 처리
 - [x] 결제 취소/실패 시 bookings 업데이트
 
-### 5-6. 결제 UI
+### 5-7. 환경 변수 설정 및 문서화
+- [x] Toss Payments 테스트 키 환경 변수 설정 가이드 작성
+- [x] `docs/TOSS_PAYMENTS_SETUP.md` 문서 생성
+- [x] 테스트 카드 정보 및 보안 권장사항 포함
+- [x] 결제 플로우 설명
+
+### 5-8. 결제 UI
 
 **차량 상세 페이지**
 - [x] "결제하기" 버튼 (PaymentButton 컴포넌트)
 - [x] 로딩 처리
 - [x] 결제 금액 표시
 
-**결제 성공 페이지 (/payments/success)**
-- [x] 결제 금액
-- [x] 예약 ID
-- [x] 차량 정보
-- [x] "예약 확인하기" 버튼
-
-**결제 실패 페이지 (/payments/fail)**
-- [x] 실패 사유 표시
-- [x] 재시도 버튼
+**내 예약 페이지 (/bookings/my)**
+- [x] 결제 버튼 (v1 결제창 방식으로 통일)
 
 ---
 
@@ -241,7 +264,7 @@
 - [x] 환경 변수 등록
   - [x] Supabase URL/Key
   - [x] Clerk 키
-  - [ ] Toss SecretKey
+  - [x] Toss Payments 테스트 키 (NEXT_PUBLIC_TOSS_CLIENT_KEY, TOSS_SECRET_KEY)
 
 ### 9-2. 배포 테스트
 - [x] 모바일 반응형 Navbar 개선

@@ -41,7 +41,10 @@ interface PaymentIntent {
 }
 
 /**
- * 결제 준비 (결제창 호출 전 데이터 생성)
+ * 결제 준비 (Toss Payments v1 결제창 호출 전 데이터 생성)
+ * 
+ * v1 결제창에 필요한 파라미터를 생성하고 반환합니다.
+ * 반환된 데이터는 클라이언트에서 form submit으로 결제창을 호출하는 데 사용됩니다.
  */
 export async function createPaymentIntent(
   bookingId: string
@@ -149,10 +152,10 @@ export async function confirmPayment(
   try {
     const supabase = await createClerkSupabaseClient();
     
-    // order_id로 예약 조회
+    // order_id로 예약 조회 (renter_id도 함께 조회하여 예약 카트 비우기용)
     const { data: booking, error: bookingError } = await supabase
       .from("bookings")
-      .select("id, total_price, payment_status")
+      .select("id, renter_id, total_price, payment_status")
       .eq("order_id", orderId)
       .single();
     
@@ -191,6 +194,23 @@ export async function confirmPayment(
           approved_at: new Date().toISOString(),
         })
         .eq("id", booking.id);
+      
+      // 예약 카트 비우기: 해당 사용자의 pending + unpaid 예약 삭제 (현재 결제한 예약 제외)
+      console.log("예약 카트 비우기 시작");
+      const { error: cartClearError } = await supabase
+        .from("bookings")
+        .delete()
+        .eq("renter_id", booking.renter_id)
+        .eq("status", "pending")
+        .eq("payment_status", "unpaid")
+        .neq("id", booking.id); // 현재 결제한 예약은 제외
+      
+      if (cartClearError) {
+        console.error("예약 카트 비우기 실패:", cartClearError);
+        // 카트 비우기 실패는 결제 성공에 영향을 주지 않음
+      } else {
+        console.log("예약 카트 비우기 완료");
+      }
       
       console.log("결제 완료 (테스트 모드)");
       console.groupEnd();
@@ -235,6 +255,23 @@ export async function confirmPayment(
         approved_at: new Date().toISOString(),
       })
       .eq("id", booking.id);
+    
+    // 예약 카트 비우기: 해당 사용자의 pending + unpaid 예약 삭제 (현재 결제한 예약 제외)
+    console.log("예약 카트 비우기 시작");
+    const { error: cartClearError } = await supabase
+      .from("bookings")
+      .delete()
+      .eq("renter_id", booking.renter_id)
+      .eq("status", "pending")
+      .eq("payment_status", "unpaid")
+      .neq("id", booking.id); // 현재 결제한 예약은 제외
+    
+    if (cartClearError) {
+      console.error("예약 카트 비우기 실패:", cartClearError);
+      // 카트 비우기 실패는 결제 성공에 영향을 주지 않음
+    } else {
+      console.log("예약 카트 비우기 완료");
+    }
     
     console.log("결제 승인 완료");
     console.groupEnd();

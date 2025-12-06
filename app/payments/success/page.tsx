@@ -1,9 +1,9 @@
 /**
  * @file app/payments/success/page.tsx
- * @description 결제 성공 페이지
+ * @description 결제 성공 페이지 (Toss Payments v1)
  * 
- * Toss Payments에서 결제 성공 후 리다이렉트되는 페이지입니다.
- * 결제를 최종 승인하고 성공 메시지를 표시합니다.
+ * Toss Payments v1 결제창에서 결제 성공 후 리다이렉트되는 페이지입니다.
+ * URL 파라미터로 paymentKey, orderId, amount를 받아서 결제를 최종 승인하고 성공 메시지를 표시합니다.
  */
 
 "use client";

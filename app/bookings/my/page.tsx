@@ -17,7 +17,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { Calendar, RefreshCw, Filter, Loader2, CreditCard } from "lucide-react";
-import { loadTossPayments } from "@tosspayments/tosspayments-sdk";
+// Toss Payments v1 결제창 방식 사용 (SDK 불필요)
 
 import { Button } from "@/components/ui/button";
 import {
@@ -160,30 +160,39 @@ export default function MyBookingsPage() {
       const paymentData = result.data;
       console.log("결제 데이터:", paymentData);
       
-      // 2. Toss Payments SDK 초기화 및 결제창 호출
-      try {
-        const toss = await loadTossPayments(TOSS_CLIENT_KEY);
-        const widgets = toss.widgets({ customerKey: "ANONYMOUS" });
-        
-        // 금액 설정
-        await widgets.setAmount({
-          currency: "KRW",
-          value: paymentData.amount,
-        });
-        
-        // 결제 요청
-        await widgets.requestPayment({
-          orderId: paymentData.orderId,
-          orderName: paymentData.orderName,
-          customerName: paymentData.customerName,
-          successUrl: paymentData.successUrl,
-          failUrl: paymentData.failUrl,
-        });
-      } catch (sdkError) {
-        // SDK 초기화 실패 시 테스트 모드로 진행
-        console.log("SDK 에러, 테스트 모드로 진행:", sdkError);
-        window.location.href = `${paymentData.successUrl}&paymentKey=TEST_KEY&amount=${paymentData.amount}`;
-      }
+      // 2. Toss Payments v1 결제창 호출 (form submit 방식)
+      const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || "test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq";
+      
+      // 결제창 form 생성 및 submit
+      const form = document.createElement("form");
+      form.method = "POST";
+      form.action = "https://api.tosspayments.com/v1/payments/card";
+      form.target = "_self";
+      
+      // form 필드 추가
+      const fields = {
+        clientKey,
+        orderId: paymentData.orderId,
+        orderName: paymentData.orderName,
+        amount: paymentData.amount.toString(),
+        customerName: paymentData.customerName,
+        successUrl: paymentData.successUrl,
+        failUrl: paymentData.failUrl,
+      };
+      
+      Object.entries(fields).forEach(([key, value]) => {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = key;
+        input.value = value;
+        form.appendChild(input);
+      });
+      
+      console.log("결제창 form 생성 완료, submit 시작");
+      
+      // form을 body에 추가하고 submit
+      document.body.appendChild(form);
+      form.submit();
       
     } catch (err) {
       console.error("결제 요청 실패:", err);
