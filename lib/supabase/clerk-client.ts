@@ -62,6 +62,13 @@ export function useClerkSupabaseClient() {
             return null;
           }
         },
+        // Clerk 인증을 사용하므로 Supabase 자체 인증 시스템 비활성화
+        // 이렇게 하면 onAuthStateChange 경고가 발생하지 않습니다
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+          detectSessionInUrl: false,
+        },
       }
     );
   }, [session, isLoaded]);
