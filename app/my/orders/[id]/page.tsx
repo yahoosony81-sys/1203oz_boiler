@@ -17,8 +17,7 @@ import {
   CreditCard, 
   Car, 
   Phone,
-  Loader2,
-  CheckCircle
+  Loader2
 } from "lucide-react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";

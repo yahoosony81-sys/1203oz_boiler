@@ -37,7 +37,6 @@ function PaymentFailContent() {
   const searchParams = useSearchParams();
   
   // URL 파라미터
-  const orderId = searchParams.get("orderId");
   const bookingId = searchParams.get("bookingId");
   const code = searchParams.get("code") || "UNKNOWN";
   const message = searchParams.get("message") || "알 수 없는 오류가 발생했습니다.";

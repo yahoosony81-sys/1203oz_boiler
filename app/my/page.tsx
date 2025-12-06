@@ -20,8 +20,7 @@ import {
   RefreshCw,
   Filter
 } from "lucide-react";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +35,7 @@ import { StatsCard } from "@/components/stats-card";
 import { OrderCard } from "@/components/order-card";
 import { getMyOrders, getMyProfileStats, type OrderWithDetails, type ProfileStats } from "@/actions/my-page-actions";
 import { useClerkSupabaseClient } from "@/lib/supabase/clerk-client";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -190,10 +190,11 @@ export default function MyPage() {
             {/* 프로필 이미지 */}
             <div className="relative w-20 h-20 rounded-full overflow-hidden bg-gray-200">
               {user?.imageUrl ? (
-                <img
+                <Image
                   src={user.imageUrl}
                   alt={userInfo?.name || user.fullName || "프로필"}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
@@ -295,7 +296,7 @@ export default function MyPage() {
               <ShoppingBag className="w-16 h-16 mx-auto text-gray-300 mb-4" />
               <p className="text-gray-600 mb-2">주문 내역이 없습니다</p>
               <Button variant="outline" asChild>
-                <a href="/vehicles">차량 검색하기</a>
+                <Link href="/vehicles">차량 검색하기</Link>
               </Button>
             </div>
           ) : (

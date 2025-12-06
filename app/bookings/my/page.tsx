@@ -39,9 +39,6 @@ import { getMyBookings, cancelBooking } from "@/actions/booking-actions";
 import { createPaymentIntent } from "@/actions/payment-actions";
 import type { Booking, Vehicle } from "@/types/vehicle";
 
-// Toss 클라이언트 키
-const TOSS_CLIENT_KEY = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY || "test_ck_D5GePWvyJnrK0W0k6q8gLzN97Eoq";
-
 export const dynamic = "force-dynamic";
 
 // 차량 정보가 포함된 예약 타입
